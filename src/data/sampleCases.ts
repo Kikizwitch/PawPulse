@@ -11,7 +11,7 @@ export const SAMPLE_CASES: StrayReport[] = [
     location: {
       lat: 22.3193,
       lng: 114.1694,
-      address: '九龍旺角亞皆老街45號後巷',
+      address: '九龍旺角亞皆老街45號後巷123456',
       district: '油尖旺區',
     },
     description: '發現一隻約2個月大橘白幼貓蜷縮在冷氣機底，左前肢不敢著地，疑似骨折，不斷微弱哀鳴，眼睛有嚴重分泌物。',
