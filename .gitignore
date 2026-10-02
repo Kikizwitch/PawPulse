@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+.firebase/
+.vercel/
+*.local
+.vite/
+server-dist/

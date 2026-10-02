@@ -1,0 +1,174 @@
+{
+  "entities": {
+    "Case": {
+      "title": "Stray Animal Rescue Case",
+      "description": "Rescue case table storing case ID, citizen contact, Gemini AI analysis, and Cloud Storage photo link",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique Case ID (e.g. PW-XXXXXX)",
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Case title summary",
+          "maxLength": 150
+        },
+        "animalType": {
+          "type": "string",
+          "description": "Reported animal species",
+          "enum": ["cat", "dog", "bird", "other"]
+        },
+        "customAnimalName": {
+          "type": "string",
+          "description": "Citizen custom species name if other",
+          "maxLength": 100
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "Cloud Storage public download URL of animal photo",
+          "maxLength": 2048
+        },
+        "storagePath": {
+          "type": "string",
+          "description": "Cloud Storage object path linked to this case (e.g. animal-reports/PW-XXX.jpg)",
+          "maxLength": 256
+        },
+        "description": {
+          "type": "string",
+          "description": "Citizen field description of animal condition",
+          "maxLength": 2000
+        },
+        "reporterName": {
+          "type": "string",
+          "description": "Citizen reporter contact name",
+          "maxLength": 100
+        },
+        "reporterPhone": {
+          "type": "string",
+          "description": "Citizen reporter contact phone",
+          "maxLength": 50
+        },
+        "reporterEmail": {
+          "type": "string",
+          "description": "Citizen reporter contact email for case tracking",
+          "maxLength": 120
+        },
+        "createdByUid": {
+          "type": "string",
+          "description": "Auth UID or anonymous tracking token",
+          "maxLength": 128
+        },
+        "status": {
+          "type": "string",
+          "description": "Rescue progress status",
+          "enum": ["pending", "in_progress", "rescued", "closed"]
+        },
+        "urgency": {
+          "type": "string",
+          "description": "Urgency triage level",
+          "enum": ["P0", "P1", "P2"]
+        }
+      },
+      "required": ["id", "animalType", "urgency", "status", "description"]
+    },
+    "NGODatail": {
+      "title": "NGO Rescue Organization Detail",
+      "description": "NGO partner profile and operational dispatch status table",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique NGO identifier",
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Chinese name of NGO",
+          "maxLength": 120
+        },
+        "englishName": {
+          "type": "string",
+          "description": "English name of NGO",
+          "maxLength": 120
+        },
+        "hotline": {
+          "type": "string",
+          "description": "Emergency dispatch hotline",
+          "maxLength": 50
+        },
+        "whatsapp": {
+          "type": "string",
+          "description": "WhatsApp dispatch number",
+          "maxLength": 50
+        },
+        "address": {
+          "type": "string",
+          "description": "Physical headquarters or station address",
+          "maxLength": 200
+        },
+        "district": {
+          "type": "string",
+          "description": "Operating district in HK",
+          "maxLength": 100
+        },
+        "capacityStatus": {
+          "type": "string",
+          "description": "Operational load status",
+          "enum": ["available", "busy", "full"]
+        },
+        "operatingHours": {
+          "type": "string",
+          "description": "Hours of operations",
+          "maxLength": 100
+        }
+      },
+      "required": ["id", "name", "hotline", "capacityStatus"]
+    },
+    "AdminUser": {
+      "title": "Platform Administrator User",
+      "description": "Admin user table authorized to manage cases, NGOs, and dispatch",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of administrator",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "Authorized administrator email",
+          "maxLength": 120
+        },
+        "name": {
+          "type": "string",
+          "description": "Administrator display name",
+          "maxLength": 100
+        },
+        "role": {
+          "type": "string",
+          "description": "Administrative permission tier",
+          "enum": ["admin", "superadmin"]
+        }
+      },
+      "required": ["uid", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/case/{caseId}": {
+      "schema": "Case",
+      "description": "Primary case table storing all stray animal rescue reports, citizen contact, Gemini AI answer, and Cloud Storage photo linkage"
+    },
+    "/ngodatail/{ngoId}": {
+      "schema": "NGODatail",
+      "description": "NGO detail table storing partner rescue organizations, emergency contact hotlines, and dispatch status"
+    },
+    "/adminuser/{adminId}": {
+      "schema": "AdminUser",
+      "description": "Admin user table authorizing backend management and database operations"
+    }
+  }
+}
