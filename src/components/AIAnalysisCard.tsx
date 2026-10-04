@@ -22,9 +22,9 @@ export const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ analysis, compac
         return {
           label: 'P1 - 需醫療關注',
           subLabel: '骨折／開放外傷／幼貓幼犬／嚴重感染虛弱',
-          badgeClass: 'bg-amber-500 text-white',
-          bgClass: 'bg-amber-50 border-amber-200',
-          textColor: 'text-amber-900',
+          badgeClass: 'bg-brand-500 text-white',
+          bgClass: 'bg-brand-50 border-brand-200',
+          textColor: 'text-brand-900',
         };
       default:
         return {
@@ -62,19 +62,19 @@ export const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ analysis, compac
     return (
       <div className={`rounded-xl p-3 border ${urgency.bgClass}`} id="ai-analysis-compact">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-stone-700">
-            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-700">
+            <Sparkles className="w-3.5 h-3.5 text-brand-600" />
             <span>AI 診斷簡報</span>
           </div>
           <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${urgency.badgeClass}`}>
             {urgency.label}
           </span>
         </div>
-        <p className="text-xs text-stone-700 mb-1">
-          <strong className="text-stone-900">{analysis.identifiedSpecies || '未知物種'}</strong>
+        <p className="text-xs text-neutral-700 mb-1">
+          <strong className="text-neutral-900">{analysis.identifiedSpecies || '未知物種'}</strong>
           {analysis.estimatedBreed ? ` (${analysis.estimatedBreed})` : ''}
         </p>
-        <p className="text-xs text-stone-600 line-clamp-2">
+        <p className="text-xs text-neutral-600 line-clamp-2">
           {analysis.urgencyReason || '暫無評估說明'}
         </p>
       </div>
@@ -82,20 +82,20 @@ export const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ analysis, compac
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden" id="ai-analysis-card">
-      <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 text-white px-5 py-4 flex items-center justify-between">
+    <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden" id="ai-analysis-card">
+      <div className="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 text-white px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+          <div className="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
             <h3 className="font-bold text-sm tracking-wide flex items-center gap-2">
               Google Gemini 多模態 AI 傷病判斷報告
-              <span className="text-xs font-normal text-stone-400">
+              <span className="text-xs font-normal text-neutral-400">
                 (信心度 {Math.round(safeConfidence * 100)}%)
               </span>
             </h3>
-            <p className="text-xs text-stone-300">
+            <p className="text-xs text-neutral-300">
               分析時間：{analyzedTimeLabel}
             </p>
           </div>
@@ -107,20 +107,20 @@ export const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ analysis, compac
       </div>
 
       <div className="p-5 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-3 border-b border-stone-100">
-          <div className="bg-stone-50 rounded-xl p-3 border border-stone-200/60">
-            <span className="text-xs font-medium text-stone-500 block mb-0.5">辨識物種</span>
-            <span className="text-sm font-bold text-stone-900">{analysis.identifiedSpecies || '未知'}</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-3 border-b border-neutral-100">
+          <div className="bg-neutral-50 rounded-xl p-3 border border-neutral-200/60">
+            <span className="text-xs font-medium text-neutral-500 block mb-0.5">辨識物種</span>
+            <span className="text-sm font-bold text-neutral-900">{analysis.identifiedSpecies || '未知'}</span>
           </div>
-          <div className="bg-stone-50 rounded-xl p-3 border border-stone-200/60">
-            <span className="text-xs font-medium text-stone-500 block mb-0.5">推測品種與毛色</span>
-            <span className="text-sm font-semibold text-stone-800">{analysis.estimatedBreed || '未知'}</span>
+          <div className="bg-neutral-50 rounded-xl p-3 border border-neutral-200/60">
+            <span className="text-xs font-medium text-neutral-500 block mb-0.5">推測品種與毛色</span>
+            <span className="text-sm font-semibold text-neutral-800">{analysis.estimatedBreed || '未知'}</span>
           </div>
         </div>
 
         {analysis.appearanceDescription && (
-          <div className="text-xs text-stone-600 bg-stone-50/70 p-3 rounded-xl border border-stone-200/50">
-            <strong className="text-stone-800">體態特徵：</strong>
+          <div className="text-xs text-neutral-600 bg-neutral-50/70 p-3 rounded-xl border border-neutral-200/50">
+            <strong className="text-neutral-800">體態特徵：</strong>
             {analysis.appearanceDescription}
           </div>
         )}
@@ -129,14 +129,14 @@ export const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ analysis, compac
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs font-bold text-stone-900 mb-0.5">緊急度評定原因</p>
-              <p className="text-xs text-stone-700 leading-relaxed">{analysis.urgencyReason || '暫無評估說明'}</p>
+              <p className="text-xs font-bold text-neutral-900 mb-0.5">緊急度評定原因</p>
+              <p className="text-xs text-neutral-700 leading-relaxed">{analysis.urgencyReason || '暫無評估說明'}</p>
             </div>
           </div>
         </div>
 
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-stone-900 mb-2">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-900 mb-2">
             <Activity className="w-4 h-4 text-rose-600" />
             <span>初步檢測傷病／異常跡象 ({safeInjuries.length})</span>
           </div>
@@ -145,7 +145,7 @@ export const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ analysis, compac
               {safeInjuries.map((injury, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 text-xs text-stone-800 bg-rose-50/60 border border-rose-100 px-3 py-2 rounded-lg"
+                  className="flex items-center gap-2 text-xs text-neutral-800 bg-rose-50/60 border border-rose-100 px-3 py-2 rounded-lg"
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
                   <span>{injury}</span>
@@ -153,12 +153,12 @@ export const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ analysis, compac
               ))}
             </div>
           ) : (
-            <p className="text-xs text-stone-400">未偵測到明顯異常跡象。</p>
+            <p className="text-xs text-neutral-400">未偵測到明顯異常跡象。</p>
           )}
         </div>
 
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-stone-900 mb-2">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-900 mb-2">
             <Wrench className="w-4 h-4 text-blue-600" />
             <span>建議 NGO 救助隊準備裝備</span>
           </div>
@@ -174,7 +174,7 @@ export const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ analysis, compac
               ))}
             </div>
           ) : (
-            <p className="text-xs text-stone-400">暫無特別裝備建議。</p>
+            <p className="text-xs text-neutral-400">暫無特別裝備建議。</p>
           )}
         </div>
 
@@ -198,10 +198,10 @@ export const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ analysis, compac
         </div>
 
         {safePrecautions.length > 0 && (
-          <div className="text-xs text-amber-800 bg-amber-50/80 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-xs text-brand-800 bg-brand-50/80 border border-brand-200 rounded-xl p-3 flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              <strong className="block text-amber-900 mb-0.5">安全禁忌與防護提示：</strong>
+              <strong className="block text-brand-900 mb-0.5">安全禁忌與防護提示：</strong>
               {safePrecautions.join('；')}
             </div>
           </div>
