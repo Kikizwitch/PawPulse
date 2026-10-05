@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AnimalType, LocationCoords, StrayReport, NGOOrganization } from '../types';
 import { PRESET_LOCATIONS, geocodeAddressQuery, reverseGeocodeCoords } from '../utils/location';
 import AddressAutocomplete from './AddressAutocomplete';
+import { CatIcon, DogIcon, BirdIcon } from './AnimalIcons';
 import type { ResolvedAddress } from '../services/places';
 import { compressImage, uploadAnimalPhoto } from '../utils/imageCompressor';
 import { rankFirestoreNGOs } from '../services/caseService';
@@ -32,10 +33,10 @@ interface ReportFormProps {
 }
 
 const inputClass =
-  'w-full px-3 py-2.5 text-sm bg-white border border-neutral-200 rounded-lg placeholder:text-neutral-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 transition-shadow';
+  'w-full px-3 py-2.5 text-sm bg-white border border-stone-200 rounded-lg placeholder:text-stone-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 transition-shadow';
 
 const RequiredTag: React.FC = () => (
-  <span className="text-2xs font-medium text-neutral-500 px-2 py-0.5 rounded-full border border-neutral-200">必填</span>
+  <span className="text-2xs font-medium text-stone-500 px-2 py-0.5 rounded-full border border-stone-200">必填</span>
 );
 
 // 冇外框嘅表單分節：標題＋說明，右上角可以放額外操作
@@ -45,11 +46,11 @@ const FormSection: React.FC<{
   aside?: React.ReactNode;
   children: React.ReactNode;
 }> = ({ title, hint, aside, children }) => (
-  <section className="py-6 border-b border-neutral-200 first:pt-0 last:border-0">
+  <section className="py-6 border-b border-stone-200 first:pt-0 last:border-0">
     <div className="flex items-start justify-between gap-3 mb-4">
       <div>
-        <h3 className="text-sm font-semibold text-neutral-900">{title}</h3>
-        {hint && <p className="text-xs text-neutral-500 mt-0.5">{hint}</p>}
+        <h3 className="text-[28px] leading-tight font-bold text-stone-900">{title}</h3>
+        {hint && <p className="text-xs text-stone-500 mt-1">{hint}</p>}
       </div>
       {aside && <div className="shrink-0">{aside}</div>}
     </div>
@@ -345,27 +346,35 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         {/* 左欄：表單 */}
         <div>
           <FormSection title="動物" hint="幫 NGO 預備合適嘅人手同工具">
-            <div className="inline-flex p-1 rounded-xl bg-neutral-100 gap-1">
+            <div className="grid grid-cols-3 gap-3 max-w-md">
               {([
-                ['cat', '🐱', '貓'],
-                ['dog', '🐶', '狗'],
-                ['other', '🕊️', '其他／雀鳥'],
-              ] as const).map(([type, emoji, label]) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setAnimalType(type)}
-                  aria-pressed={animalType === type}
-                  className={`px-4 py-2 rounded-lg text-sm flex items-center gap-1.5 transition-colors cursor-pointer ${
-                    animalType === type
-                      ? 'bg-white text-neutral-900 font-medium shadow-xs'
-                      : 'text-neutral-500 hover:text-neutral-900'
-                  }`}
-                >
-                  <span>{emoji}</span>
-                  {label}
-                </button>
-              ))}
+                ['cat', CatIcon, '貓'],
+                ['dog', DogIcon, '狗'],
+                ['other', BirdIcon, '其他／雀鳥'],
+              ] as const).map(([type, Icon, label]) => {
+                const selected = animalType === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setAnimalType(type)}
+                    aria-pressed={selected}
+                    className={`group py-4 rounded-2xl border flex flex-col items-center gap-2 transition-all cursor-pointer ${
+                      selected
+                        ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-500'
+                        : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50'
+                    }`}
+                  >
+                    <Icon
+                      active={selected}
+                      className="w-14 h-14 text-stone-900 transition-transform group-hover:scale-105"
+                    />
+                    <span className={`text-sm ${selected ? 'font-semibold text-stone-900' : 'text-stone-600'}`}>
+                      {label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             {animalType === 'other' && (
@@ -396,13 +405,13 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-28 h-28 rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200 shrink-0 flex items-center justify-center text-neutral-400 hover:bg-neutral-200/60 transition-colors cursor-pointer"
+                className="w-28 h-28 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 shrink-0 flex items-center justify-center text-stone-400 hover:bg-stone-200/60 transition-colors cursor-pointer"
                 aria-label="選擇相片"
               >
                 {photoPreview ? (
                   <img src={photoPreview} alt="現場相片預覽" className="w-full h-full object-cover" />
                 ) : (
-                  <Camera className="w-7 h-7" strokeWidth={1.5} />
+                  <Camera className="w-7 h-7 text-brand-400" strokeWidth={1.5} />
                 )}
               </button>
 
@@ -410,7 +419,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 rounded-lg bg-neutral-900 hover:bg-black text-white text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-lg bg-stone-900 hover:bg-black text-white text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer"
                 >
                   <Upload className="w-4 h-4" />
                   {photoPreview ? '換一張相' : '選擇相片'}
@@ -418,9 +427,9 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 rounded-lg border border-neutral-200 hover:bg-neutral-50 text-neutral-800 text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-lg border border-stone-200 hover:bg-stone-50 text-stone-800 text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer"
                 >
-                  <Camera className="w-4 h-4" />
+                  <Camera className="w-4 h-4 text-brand-500" />
                   影相
                 </button>
               </div>
@@ -435,9 +444,9 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                 type="button"
                 onClick={handleGetCurrentLocation}
                 disabled={isGeolocating}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-50 text-xs font-medium transition-colors disabled:opacity-60 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 hover:bg-stone-50 text-xs font-medium transition-colors disabled:opacity-60 cursor-pointer"
               >
-                {isGeolocating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
+                {isGeolocating ? <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-500" /> : <LocateFixed className="w-3.5 h-3.5 text-brand-500" />}
                 用 GPS 定位
               </button>
             }
@@ -457,7 +466,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                 type="button"
                 onClick={handleSearchManualAddress}
                 disabled={isSearchingAddress}
-                className="px-4 rounded-lg bg-neutral-900 hover:bg-black text-white text-sm font-medium flex items-center gap-1.5 transition-colors shrink-0 disabled:opacity-60 cursor-pointer"
+                className="px-4 rounded-lg bg-stone-900 hover:bg-black text-white text-sm font-medium flex items-center gap-1.5 transition-colors shrink-0 disabled:opacity-60 cursor-pointer"
               >
                 {isSearchingAddress ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                 定位
@@ -466,18 +475,18 @@ export const ReportForm: React.FC<ReportFormProps> = ({
 
             {locationConfirmed ? (
               <div className="mt-3 flex items-center gap-2 text-sm min-w-0">
-                <MapPin className="w-4 h-4 text-neutral-900 shrink-0" />
+                <MapPin className="w-4 h-4 text-brand-500 shrink-0" />
                 <span className="truncate">
                   {location.address}
-                  {location.district && <span className="text-neutral-500">（{location.district}）</span>}
+                  {location.district && <span className="text-stone-500">（{location.district}）</span>}
                 </span>
-                <span className="ml-auto pl-2 text-2xs text-neutral-400 font-mono shrink-0">
+                <span className="ml-auto pl-2 text-2xs text-stone-400 font-mono shrink-0">
                   {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                 </span>
               </div>
             ) : (
-              <p className="mt-3 flex items-center gap-1.5 text-xs text-neutral-500">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <p className="mt-3 flex items-center gap-1.5 text-xs text-stone-500">
+                <AlertCircle className="w-3.5 h-3.5 text-brand-500 shrink-0" />
                 未確認位置：撳「用 GPS 定位」，或者輸入地址再揀一個建議。
               </p>
             )}
@@ -498,12 +507,12 @@ export const ReportForm: React.FC<ReportFormProps> = ({
             title="聯絡資料"
             hint="唔會公開，只供管理員同救援機構聯絡你"
             aside={
-              <label className="flex items-center gap-1.5 text-xs text-neutral-700 font-medium cursor-pointer">
+              <label className="flex items-center gap-1.5 text-xs text-stone-700 font-medium cursor-pointer">
                 <input
                   type="checkbox"
                   checked={isAnonymous}
                   onChange={(e) => setIsAnonymous(e.target.checked)}
-                  className="rounded accent-neutral-900"
+                  className="rounded accent-brand-500"
                 />
                 匿名通報
               </label>
@@ -511,12 +520,12 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           >
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1.5">
+                <label className="block text-xs font-medium text-stone-700 mb-1.5">
                   電郵 <span className="text-rose-600">*</span>
-                  <span className="ml-1.5 font-normal text-neutral-400">接收確認信同追蹤連結</span>
+                  <span className="ml-1.5 font-normal text-stone-400">接收確認信同追蹤連結</span>
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Mail className="w-4 h-4 text-brand-500 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
                     value={reporterEmail}
@@ -531,7 +540,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               {!isAnonymous && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-neutral-700 mb-1.5">電話（選填）</label>
+                    <label className="block text-xs font-medium text-stone-700 mb-1.5">電話（選填）</label>
                     <input
                       type="tel"
                       value={reporterPhone}
@@ -541,7 +550,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-neutral-700 mb-1.5">稱呼（選填）</label>
+                    <label className="block text-xs font-medium text-stone-700 mb-1.5">稱呼（選填）</label>
                     <input
                       type="text"
                       value={reporterName}
@@ -557,12 +566,12 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         </div>
 
         {/* 右欄：摘要＋送出 */}
-        <aside className="lg:sticky lg:top-24 rounded-2xl border border-neutral-200 bg-neutral-50 p-5 space-y-5">
-          <div className="hidden lg:flex aspect-[4/3] rounded-xl overflow-hidden bg-neutral-200/70 items-center justify-center text-neutral-400">
+        <aside className="lg:sticky lg:top-24 rounded-2xl border border-stone-200 bg-stone-50 p-5 space-y-5">
+          <div className="hidden lg:flex aspect-[4/3] rounded-xl overflow-hidden bg-stone-200/70 items-center justify-center text-stone-400">
             {photoPreview ? (
               <img src={photoPreview} alt="" className="w-full h-full object-cover" />
             ) : (
-              <Camera className="w-8 h-8" strokeWidth={1.5} />
+              <Camera className="w-8 h-8 text-brand-400" strokeWidth={1.5} />
             )}
           </div>
 
@@ -570,31 +579,31 @@ export const ReportForm: React.FC<ReportFormProps> = ({
             {checklist.map(({ label, value, done }) => (
               <li key={label} className="flex items-center gap-2.5 text-sm">
                 {done ? (
-                  <span className="w-4 h-4 rounded-full bg-neutral-900 text-white flex items-center justify-center shrink-0">
+                  <span className="w-4 h-4 rounded-full bg-brand-500 text-white flex items-center justify-center shrink-0">
                     <Check className="w-2.5 h-2.5" strokeWidth={3} />
                   </span>
                 ) : (
-                  <span className="w-4 h-4 rounded-full border-[1.5px] border-neutral-300 shrink-0" />
+                  <span className="w-4 h-4 rounded-full border-[1.5px] border-stone-300 shrink-0" />
                 )}
-                <span className="text-neutral-500 shrink-0">{label}</span>
-                <span className={`ml-auto truncate text-right ${done ? 'text-neutral-900' : 'text-neutral-400'}`}>{value}</span>
+                <span className="text-stone-500 shrink-0">{label}</span>
+                <span className={`ml-auto truncate text-right ${done ? 'text-stone-900' : 'text-stone-400'}`}>{value}</span>
               </li>
             ))}
           </ul>
 
-          <div className="pt-4 border-t border-neutral-200">
-            <label className="block text-xs font-medium text-neutral-700 mb-1.5">驗證碼</label>
+          <div className="pt-4 border-t border-stone-200">
+            <label className="block text-xs font-medium text-stone-700 mb-1.5">驗證碼</label>
             <div className="flex items-center gap-2">
-              <div className="px-3 py-2 bg-neutral-900 text-white font-mono font-bold tracking-widest text-sm rounded-lg select-none">
+              <div className="px-3 py-2 bg-stone-900 text-white font-mono font-bold tracking-widest text-sm rounded-lg select-none">
                 {captchaCode}
               </div>
               <button
                 type="button"
                 onClick={refreshCaptcha}
-                className="p-2 rounded-lg hover:bg-neutral-200 text-neutral-500 transition-colors cursor-pointer"
+                className="p-2 rounded-lg hover:bg-stone-200 text-stone-500 transition-colors cursor-pointer"
                 title="換一個驗證碼"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="w-4 h-4 text-brand-500" />
               </button>
               <input
                 type="text"
@@ -614,16 +623,16 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               id="privacy-consent"
               checked={agreedPrivacy}
               onChange={(e) => setAgreedPrivacy(e.target.checked)}
-              className="mt-0.5 rounded accent-neutral-900 cursor-pointer"
+              className="mt-0.5 rounded accent-brand-500 cursor-pointer"
               required
             />
-            <label htmlFor="privacy-consent" className="text-2xs text-neutral-500 leading-relaxed cursor-pointer">
-              本人同意提供上述資料，並明瞭：動物相片、發現位置及狀況描述會<strong className="text-neutral-700">公開顯示</strong>於地圖及個案列表；
-              稱呼、電話及電郵<strong className="text-neutral-700">不會公開</strong>，只供管理員及受委託救援機構聯絡之用；相片及描述會交由 Google Gemini AI 作初步分析。同時理解{' '}
+            <label htmlFor="privacy-consent" className="text-2xs text-stone-500 leading-relaxed cursor-pointer">
+              本人同意提供上述資料，並明瞭：動物相片、發現位置及狀況描述會<strong className="text-stone-700">公開顯示</strong>於地圖及個案列表；
+              稱呼、電話及電郵<strong className="text-stone-700">不會公開</strong>，只供管理員及受委託救援機構聯絡之用；相片及描述會交由 Google Gemini AI 作初步分析。同時理解{' '}
               <button
                 type="button"
                 onClick={() => setShowPrivacyModal(true)}
-                className="text-neutral-900 font-medium underline underline-offset-2 cursor-pointer"
+                className="text-stone-900 font-medium underline underline-offset-2 cursor-pointer"
               >
                 AI 傷病分診免責聲明與個人資料收集聲明 (PICS)
               </button>
@@ -639,7 +648,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           )}
 
           {statusMessage && (
-            <div className="p-3 bg-white border border-neutral-200 text-neutral-700 rounded-lg text-xs flex items-center gap-2">
+            <div className="p-3 bg-white border border-stone-200 text-stone-700 rounded-lg text-xs flex items-center gap-2">
               {isSubmitting ? (
                 <Loader2 className="w-4 h-4 animate-spin shrink-0" />
               ) : (
@@ -653,7 +662,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
             type="submit"
             disabled={isSubmitting}
             id="btn-submit-report"
-            className="w-full py-3 rounded-xl bg-neutral-900 hover:bg-black text-white text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+            className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
           >
             {isSubmitting ? (
               <>
@@ -673,16 +682,16 @@ export const ReportForm: React.FC<ReportFormProps> = ({
       {/* PICS & AI Disclaimer Modal */}
       {showPrivacyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-neutral-200 space-y-4 max-h-[85vh] overflow-y-auto text-xs text-neutral-700">
-            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-stone-200 space-y-4 max-h-[85vh] overflow-y-auto text-xs text-stone-700">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-brand-600" />
-                <h3 className="font-bold text-sm text-neutral-900">法律私隱與 AI 獸醫免責聲明</h3>
+                <h3 className="font-bold text-sm text-stone-900">法律私隱與 AI 獸醫免責聲明</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPrivacyModal(false)}
-                className="text-neutral-400 hover:text-neutral-600 font-bold cursor-pointer"
+                className="text-stone-400 hover:text-stone-600 font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -690,7 +699,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
 
             <div className="space-y-3 leading-relaxed">
               <div>
-                <h4 className="font-bold text-neutral-900 mb-1">1. 收集個人資料聲明 (PICS)</h4>
+                <h4 className="font-bold text-stone-900 mb-1">1. 收集個人資料聲明 (PICS)</h4>
                 <p>
                   我們依照閣下所在地適用的個人資料保護法例（例如香港《個人資料（私隱）條例》、歐盟 GDPR）處理閣下的資料。
                   稱呼、電話及電郵只用於本平台及受委託動物福利機構聯絡閣下、確認動物位置及跟進救援進度，不會公開，亦不會出售或用於商業推廣。
@@ -700,7 +709,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               </div>
 
               <div>
-                <h4 className="font-bold text-neutral-900 mb-1">2. AI 傷病判斷免責條款</h4>
+                <h4 className="font-bold text-stone-900 mb-1">2. AI 傷病判斷免責條款</h4>
                 <p>
                   PawPulse 採用的 Google Gemini 多模態 AI 分析系統，旨在協助市民與搜救隊進行初步急診分診（P0/P1/P2）與裝備準備建議，<strong>絕非註冊獸醫之正式醫學診斷</strong>。
                 </p>
@@ -726,7 +735,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
             <button
               type="button"
               onClick={() => setShowPrivacyModal(false)}
-              className="w-full py-2.5 rounded-xl bg-neutral-900 text-white font-bold text-xs cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-stone-900 text-white font-bold text-xs cursor-pointer"
             >
               我已理解並關閉
             </button>

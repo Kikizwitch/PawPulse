@@ -8,7 +8,7 @@ interface EmergencyGuideModalProps {
 export const EmergencyGuideModal: React.FC<EmergencyGuideModalProps> = ({ onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto" id="emergency-guide-modal">
-      <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-neutral-200 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden my-auto max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-5 bg-rose-600 text-white">
           <div className="flex items-center gap-2.5">
@@ -27,7 +27,7 @@ export const EmergencyGuideModal: React.FC<EmergencyGuideModalProps> = ({ onClos
         </div>
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto space-y-6 text-xs text-neutral-700 leading-relaxed">
+        <div className="p-6 overflow-y-auto space-y-6 text-xs text-stone-700 leading-relaxed">
           {/* Critical Rule */}
           <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
@@ -56,12 +56,12 @@ export const EmergencyGuideModal: React.FC<EmergencyGuideModalProps> = ({ onClos
             </div>
 
             {/* DONTs */}
-            <div className="bg-neutral-50 border border-neutral-200 rounded-2xl p-4 space-y-2.5">
-              <h4 className="font-bold text-sm text-neutral-900 flex items-center gap-1.5">
+            <div className="bg-stone-50 border border-stone-200 rounded-2xl p-4 space-y-2.5">
+              <h4 className="font-bold text-sm text-stone-900 flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4 text-rose-500" />
                 切勿採取的危險行為 (DON'T)
               </h4>
-              <ul className="space-y-2 text-neutral-700">
+              <ul className="space-y-2 text-stone-700">
                 <li>• <strong>切勿隨意翻動：</strong>疑似車禍撞擊傷者，搬動脊椎或骨盆可能造成神經切斷或致命內出血。</li>
                 <li>• <strong>切勿餵食人食牛奶：</strong>貓狗多有乳糖不耐，且若需緊急全身麻醉手術，胃內食物會引致嘔吐窒息。</li>
                 <li>• <strong>切勿亂擦成藥：</strong>人類的外用消炎藥、碘酒或止痛藥（如撲熱息痛）對貓狗有劇毒性。</li>
@@ -90,10 +90,10 @@ export const EmergencyGuideModal: React.FC<EmergencyGuideModalProps> = ({ onClos
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-neutral-50 border-t border-neutral-200 flex justify-end">
+        <div className="p-4 bg-stone-50 border-t border-stone-200 flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-neutral-900 text-white font-bold text-xs hover:bg-neutral-800 transition-colors"
+            className="px-5 py-2 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
           >
             我已知悉
           </button>

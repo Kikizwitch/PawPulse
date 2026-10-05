@@ -20,7 +20,7 @@ export const NAV_ITEMS: { tab: AppTab; label: string; icon: React.ElementType }[
 ];
 
 const Badge: React.FC<{ count: number }> = ({ count }) => (
-  <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-600 text-white text-3xs font-bold flex items-center justify-center ring-2 ring-neutral-100">
+  <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-600 text-white text-3xs font-bold flex items-center justify-center ring-2 ring-stone-100">
     {count > 99 ? '99+' : count}
   </span>
 );
@@ -43,10 +43,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
   return (
     <>
       {/* 桌面：左邊 rail */}
-      <aside className="hidden md:flex fixed inset-y-0 left-0 z-40 w-20 flex-col items-center py-4 bg-neutral-100">
+      <aside className="hidden md:flex fixed inset-y-0 left-0 z-40 w-20 flex-col items-center py-4 bg-stone-100">
         <button
           onClick={() => onSelectTab('report')}
-          className="w-12 h-12 rounded-2xl bg-neutral-900 text-white flex items-center justify-center hover:bg-black transition-colors cursor-pointer"
+          className="w-12 h-12 rounded-2xl bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 transition-colors cursor-pointer"
           title="PawPulse"
           id="brand-logo-btn"
         >
@@ -62,15 +62,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
                 id={`nav-${tab}-tab`}
                 onClick={() => onSelectTab(tab)}
                 aria-current={active ? 'page' : undefined}
-                className={`group w-16 py-2 rounded-xl flex flex-col items-center gap-1 transition-colors cursor-pointer ${
-                  active ? 'bg-neutral-200/80 text-neutral-900' : 'text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900'
+                className={`group w-16 py-2 rounded-xl flex flex-col items-center gap-1 text-stone-900 transition-colors cursor-pointer ${
+                  active ? 'bg-brand-50' : 'hover:bg-stone-200/60'
                 }`}
               >
                 <span className="relative">
-                  <Icon className="w-5 h-5" strokeWidth={active ? 2.2 : 1.8} />
+                  <Icon className={`w-5 h-5 ${active ? 'text-brand-500' : ''}`} strokeWidth={active ? 2.2 : 1.8} />
                   {tab === 'cases' && urgentCount > 0 && <Badge count={urgentCount} />}
                   {tab === 'admin' && isAdmin && (
-                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-neutral-100" title="管理員權限生效中" />
+                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-stone-100" title="管理員權限生效中" />
                   )}
                 </span>
                 <span className={`text-2xs ${active ? 'font-semibold' : 'font-medium'}`}>{label}</span>
@@ -83,7 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
           <button
             id="nav-guide-btn"
             onClick={onOpenGuide}
-            className="w-16 py-2 rounded-xl flex flex-col items-center gap-1 text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 transition-colors cursor-pointer"
+            className="w-16 py-2 rounded-xl flex flex-col items-center gap-1 text-stone-900 hover:bg-stone-200/60 transition-colors cursor-pointer"
           >
             <ShieldAlert className="w-5 h-5" strokeWidth={1.8} />
             <span className="text-2xs font-medium">應急</span>
@@ -92,12 +92,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
           <button
             onClick={handleAuthClick}
             title={user ? `${user.email ?? ''}（按此登出）` : '用 Google 登入'}
-            className="w-16 py-2 rounded-xl flex flex-col items-center gap-1 text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 transition-colors cursor-pointer"
+            className="w-16 py-2 rounded-xl flex flex-col items-center gap-1 text-stone-900 hover:bg-stone-200/60 transition-colors cursor-pointer"
           >
             {user?.photoURL ? (
               <img src={user.photoURL} alt="" referrerPolicy="no-referrer" className="w-7 h-7 rounded-full object-cover" />
             ) : user ? (
-              <span className="w-7 h-7 rounded-full bg-neutral-900 text-white text-xs font-bold flex items-center justify-center">
+              <span className="w-7 h-7 rounded-full bg-stone-900 text-white text-xs font-bold flex items-center justify-center">
                 {(user.displayName || user.email || '?').charAt(0).toUpperCase()}
               </span>
             ) : (
@@ -111,7 +111,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
       </aside>
 
       {/* 手機：底部 tab bar */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-neutral-200 pb-[env(safe-area-inset-bottom)]">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-stone-200 pb-[env(safe-area-inset-bottom)]">
         <div className="grid grid-cols-6">
           {NAV_ITEMS.map(({ tab, label, icon: Icon }) => {
             const active = currentTab === tab;
@@ -120,10 +120,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
                 key={tab}
                 onClick={() => onSelectTab(tab)}
                 aria-current={active ? 'page' : undefined}
-                className={`py-2 flex flex-col items-center gap-0.5 cursor-pointer ${active ? 'text-neutral-900' : 'text-neutral-400'}`}
+                className="py-2 flex flex-col items-center gap-0.5 text-stone-900 cursor-pointer"
               >
                 <span className="relative">
-                  <Icon className="w-5 h-5" strokeWidth={active ? 2.2 : 1.8} />
+                  <Icon className={`w-5 h-5 ${active ? 'text-brand-500' : ''}`} strokeWidth={active ? 2.2 : 1.8} />
                   {tab === 'cases' && urgentCount > 0 && <Badge count={urgentCount} />}
                 </span>
                 <span className={`text-2xs ${active ? 'font-semibold' : 'font-medium'}`}>{label}</span>

@@ -289,7 +289,7 @@ function AppContent() {
   const meta = pageMeta[currentTab];
 
   return (
-    <div className="min-h-screen bg-neutral-100 text-neutral-900 font-sans">
+    <div className="min-h-screen bg-stone-100 text-stone-900 font-sans">
       <Sidebar
         currentTab={currentTab}
         onSelectTab={(tab) => setCurrentTab(tab)}
@@ -298,19 +298,19 @@ function AppContent() {
       />
 
       <div className="md:pl-20 md:py-3 md:pr-3 min-h-screen flex flex-col">
-        <div className="flex-1 flex flex-col bg-white md:rounded-2xl md:border md:border-neutral-200 md:shadow-sm overflow-hidden">
+        <div className="flex-1 flex flex-col bg-white md:rounded-2xl md:border md:border-stone-200 md:shadow-sm overflow-hidden">
           {/* 頂部標題列 */}
-          <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-neutral-200">
+          <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-stone-200">
             <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
               <div className="min-w-0">
                 <h1 className="text-lg font-semibold tracking-tight truncate">{meta.title}</h1>
-                <p className="text-xs text-neutral-500 truncate">{meta.subtitle}</p>
+                <p className="text-xs text-stone-500 truncate">{meta.subtitle}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {urgentCount > 0 && currentTab !== 'cases' && (
                   <button
                     onClick={() => setCurrentTab('cases')}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-200 text-xs font-medium hover:bg-neutral-50 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-medium hover:bg-stone-50 transition-colors cursor-pointer"
                   >
                     <span className="relative flex w-2 h-2">
                       <span className="absolute inset-0 rounded-full bg-rose-500 animate-ping opacity-75" />
@@ -323,16 +323,16 @@ function AppContent() {
                 {emergency && (
                   <a
                     href={telHref(emergency.phone)}
-                    className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 text-xs font-medium hover:bg-neutral-50 transition-colors"
+                    className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-medium hover:bg-stone-50 transition-colors"
                   >
-                    <PhoneCall className="w-3.5 h-3.5" />
+                    <PhoneCall className="w-3.5 h-3.5 text-brand-500" />
                     {emergency.name}
                   </a>
                 )}
                 {currentTab !== 'report' && currentTab !== 'admin' && (
                   <button
                     onClick={() => setCurrentTab('report')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-xs font-medium hover:bg-black transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">新通報</span>
@@ -356,14 +356,14 @@ function AppContent() {
             )}
 
             {emailConfirmationBanner && (
-              <div className="mb-6 p-4 rounded-xl border border-neutral-200 bg-neutral-50 flex items-start justify-between gap-3 text-sm">
+              <div className="mb-6 p-4 rounded-xl border border-stone-200 bg-stone-50 flex items-start justify-between gap-3 text-sm">
                 <div className="flex items-start gap-2.5">
-                  <Mail className="w-4 h-4 mt-0.5 text-neutral-500 shrink-0" />
-                  <span className="text-neutral-700">
-                    確認信已寄出：個案 <code className="font-mono text-neutral-900">#{emailConfirmationBanner.caseId}</code> 嘅追蹤連結已寄去 <strong className="text-neutral-900">{emailConfirmationBanner.email}</strong>。
+                  <Mail className="w-4 h-4 mt-0.5 text-brand-500 shrink-0" />
+                  <span className="text-stone-700">
+                    確認信已寄出：個案 <code className="font-mono text-stone-900">#{emailConfirmationBanner.caseId}</code> 嘅追蹤連結已寄去 <strong className="text-stone-900">{emailConfirmationBanner.email}</strong>。
                   </span>
                 </div>
-                <button onClick={() => setEmailConfirmationBanner(null)} className="text-neutral-400 hover:text-neutral-700 cursor-pointer" aria-label="關閉">
+                <button onClick={() => setEmailConfirmationBanner(null)} className="text-stone-400 hover:text-stone-700 cursor-pointer" aria-label="關閉">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -373,25 +373,25 @@ function AppContent() {
               <div className="space-y-6">
                 {justSubmittedReport ? (
                   <div className="space-y-6" id="report-success-view">
-                    <div className="rounded-2xl border border-neutral-200 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="rounded-2xl border border-stone-200 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div className="flex items-center gap-3.5">
-                        <div className="w-11 h-11 rounded-xl bg-neutral-900 text-white flex items-center justify-center shrink-0">
+                        <div className="w-11 h-11 rounded-xl bg-brand-500 text-white flex items-center justify-center shrink-0">
                           <CheckCircle2 className="w-6 h-6" />
                         </div>
                         <div>
                           <h3 className="font-semibold text-base">通報成功 · {justSubmittedReport.id}</h3>
-                          <p className="text-xs text-neutral-500 mt-0.5">
+                          <p className="text-xs text-stone-500 mt-0.5">
                             相片已儲存，AI 已完成傷勢評估，並配對咗附近合適嘅 NGO。
                           </p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <button onClick={() => handleNavigateToMap(justSubmittedReport.location)} className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-neutral-900 text-white hover:bg-black text-xs font-medium transition-colors cursor-pointer">
+                        <button onClick={() => handleNavigateToMap(justSubmittedReport.location)} className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-stone-900 text-white hover:bg-black text-xs font-medium transition-colors cursor-pointer">
                           <MapPin className="w-4 h-4" />
                           喺地圖睇位置
                         </button>
-                        <button onClick={() => setJustSubmittedReport(null)} className="flex-1 sm:flex-initial px-4 py-2 rounded-lg border border-neutral-200 hover:bg-neutral-50 text-xs font-medium transition-colors cursor-pointer">
+                        <button onClick={() => setJustSubmittedReport(null)} className="flex-1 sm:flex-initial px-4 py-2 rounded-lg border border-stone-200 hover:bg-stone-50 text-xs font-medium transition-colors cursor-pointer">
                           通報新個案
                         </button>
                       </div>
@@ -400,9 +400,9 @@ function AppContent() {
                     {justSubmittedReport.aiAnalysis ? (
                       <AIAnalysisCard analysis={justSubmittedReport.aiAnalysis} />
                     ) : (
-                      <div className="rounded-2xl border border-dashed border-neutral-300 p-5 text-center space-y-1">
-                        <p className="text-sm font-medium text-neutral-700">Gemini 冇回應</p>
-                        <p className="text-xs text-neutral-400">未能取得 AI 傷勢分析，個案已經儲存，並直接配對附近救助隊。</p>
+                      <div className="rounded-2xl border border-dashed border-stone-300 p-5 text-center space-y-1">
+                        <p className="text-sm font-medium text-stone-700">Gemini 冇回應</p>
+                        <p className="text-xs text-stone-400">未能取得 AI 傷勢分析，個案已經儲存，並直接配對附近救助隊。</p>
                       </div>
                     )}
 
@@ -451,7 +451,7 @@ function AppContent() {
             )}
           </main>
 
-          <footer className="border-t border-neutral-200 px-4 sm:px-6 lg:px-8 py-4 mb-16 md:mb-0 text-2xs text-neutral-400 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+          <footer className="border-t border-stone-200 px-4 sm:px-6 lg:px-8 py-4 mb-16 md:mb-0 text-2xs text-stone-400 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
             <span>PawPulse · 流浪動物即時通報與救助媒合</span>
             <span>我哋按適用嘅個人資料保護法例處理通報者資料。若遇嚴重車禍或瀕危動物，{getEmergencyHint()}。</span>
           </footer>

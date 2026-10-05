@@ -210,27 +210,27 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     : [];
 
   return (
-    <div className="relative w-full h-[650px] rounded-3xl overflow-hidden border border-neutral-200 shadow-sm bg-neutral-100" id="interactive-map-container">
+    <div className="relative w-full h-[650px] rounded-3xl overflow-hidden border border-stone-200 shadow-sm bg-stone-100" id="interactive-map-container">
       <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/95 backdrop-blur border border-neutral-200 shadow-md pointer-events-auto flex-wrap">
-          <div className="flex items-center gap-1 border-r border-neutral-200 pr-1.5 mr-0.5">
-            <button onClick={() => setFilterAnimal('all')} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${filterAnimal === 'all' ? 'bg-brand-500 text-white' : 'text-neutral-700 hover:bg-neutral-100'}`}>全部物種</button>
-            <button onClick={() => setFilterAnimal('cat')} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${filterAnimal === 'cat' ? 'bg-brand-500 text-white' : 'text-neutral-700 hover:bg-neutral-100'}`}>🐱 貓咪</button>
-            <button onClick={() => setFilterAnimal('dog')} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${filterAnimal === 'dog' ? 'bg-brand-500 text-white' : 'text-neutral-700 hover:bg-neutral-100'}`}>🐶 犬隻</button>
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/95 backdrop-blur border border-stone-200 shadow-md pointer-events-auto flex-wrap">
+          <div className="flex items-center gap-1 border-r border-stone-200 pr-1.5 mr-0.5">
+            <button onClick={() => setFilterAnimal('all')} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${filterAnimal === 'all' ? 'bg-brand-500 text-white' : 'text-stone-700 hover:bg-stone-100'}`}>全部物種</button>
+            <button onClick={() => setFilterAnimal('cat')} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${filterAnimal === 'cat' ? 'bg-brand-500 text-white' : 'text-stone-700 hover:bg-stone-100'}`}>🐱 貓咪</button>
+            <button onClick={() => setFilterAnimal('dog')} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${filterAnimal === 'dog' ? 'bg-brand-500 text-white' : 'text-stone-700 hover:bg-stone-100'}`}>🐶 犬隻</button>
             {/* ⚠️ 已補上 bird 篩選 */}
-            <button onClick={() => setFilterAnimal('bird')} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${filterAnimal === 'bird' ? 'bg-brand-500 text-white' : 'text-neutral-700 hover:bg-neutral-100'}`}>🕊️ 雀鳥</button>
+            <button onClick={() => setFilterAnimal('bird')} className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${filterAnimal === 'bird' ? 'bg-brand-500 text-white' : 'text-stone-700 hover:bg-stone-100'}`}>🕊️ 雀鳥</button>
           </div>
 
           <div className="flex items-center gap-1">
-            <button onClick={() => setFilterUrgency('all')} className={`px-2 py-1 text-xs font-medium rounded-lg ${filterUrgency === 'all' ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-100'}`}>所有等級</button>
+            <button onClick={() => setFilterUrgency('all')} className={`px-2 py-1 text-xs font-medium rounded-lg ${filterUrgency === 'all' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'}`}>所有等級</button>
             <button onClick={() => setFilterUrgency('P0')} className={`px-2 py-1 text-xs font-bold rounded-lg ${filterUrgency === 'P0' ? 'bg-rose-600 text-white' : 'text-rose-700 hover:bg-rose-50'}`}>P0 危急</button>
             <button onClick={() => setFilterUrgency('P1')} className={`px-2 py-1 text-xs font-bold rounded-lg ${filterUrgency === 'P1' ? 'bg-amber-500 text-white' : 'text-amber-700 hover:bg-amber-50'}`}>P1 醫療</button>
             <button onClick={() => setFilterUrgency('P2')} className={`px-2 py-1 text-xs font-medium rounded-lg ${filterUrgency === 'P2' ? 'bg-emerald-600 text-white' : 'text-emerald-700 hover:bg-emerald-50'}`}>P2 穩定</button>
           </div>
         </div>
 
-        <div className="p-1.5 rounded-2xl bg-white/95 backdrop-blur border border-neutral-200 shadow-md pointer-events-auto flex items-center gap-2">
-          <label className="flex items-center gap-2 text-xs font-bold text-neutral-800 cursor-pointer px-2">
+        <div className="p-1.5 rounded-2xl bg-white/95 backdrop-blur border border-stone-200 shadow-md pointer-events-auto flex items-center gap-2">
+          <label className="flex items-center gap-2 text-xs font-bold text-stone-800 cursor-pointer px-2">
             <input type="checkbox" checked={showNGOs} onChange={(e) => setShowNGOs(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" />
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-blue-600 inline-block" />
@@ -241,7 +241,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       </div>
 
       {reports.length === 0 && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[1000] bg-white/95 backdrop-blur px-4 py-2.5 rounded-2xl border border-neutral-200 shadow-lg text-xs text-neutral-700 font-medium flex items-center gap-2 pointer-events-auto">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[1000] bg-white/95 backdrop-blur px-4 py-2.5 rounded-2xl border border-stone-200 shadow-lg text-xs text-stone-700 font-medium flex items-center gap-2 pointer-events-auto">
           <span className="w-2 h-2 rounded-full bg-brand-500 shrink-0" />
           <span>目前 Firestore 資料庫中尚無待救援個案標記</span>
         </div>
@@ -250,28 +250,28 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       <div ref={mapContainerRef} className="w-full h-full" />
 
       {activeReport && (
-        <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-[1000] bg-white/95 backdrop-blur rounded-2xl border border-neutral-200 shadow-xl p-4 transition-all">
+        <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-[1000] bg-white/95 backdrop-blur rounded-2xl border border-stone-200 shadow-xl p-4 transition-all">
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-center gap-2">
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full text-white ${activeReport.urgency === 'P0' ? 'bg-rose-600 animate-pulse' : activeReport.urgency === 'P1' ? 'bg-amber-500' : 'bg-emerald-600'}`}>
                 {activeReport.urgency}
               </span>
-              <span className="text-xs font-bold text-neutral-800">{activeReport.title}</span>
+              <span className="text-xs font-bold text-stone-800">{activeReport.title}</span>
             </div>
-            <button onClick={() => setActiveReport(null)} className="text-neutral-400 hover:text-neutral-600 text-xs font-bold p-1">✕</button>
+            <button onClick={() => setActiveReport(null)} className="text-stone-400 hover:text-stone-600 text-xs font-bold p-1">✕</button>
           </div>
 
           <div className="flex gap-3 mb-3">
             <img
               src={activeReport.photoUrl}
               alt="個案照片"
-              className="w-16 h-16 rounded-xl object-cover shrink-0 border border-neutral-200"
+              className="w-16 h-16 rounded-xl object-cover shrink-0 border border-stone-200"
               referrerPolicy="no-referrer"
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden'; }}
             />
-            <div className="text-xs text-neutral-600 overflow-hidden">
-              <p className="font-semibold text-neutral-900 truncate mb-1">📍 {activeReport.location.address}</p>
-              <p className="line-clamp-2 text-neutral-500 mb-1">{activeReport.description}</p>
+            <div className="text-xs text-stone-600 overflow-hidden">
+              <p className="font-semibold text-stone-900 truncate mb-1">📍 {activeReport.location.address}</p>
+              <p className="line-clamp-2 text-stone-500 mb-1">{activeReport.description}</p>
               {safeActiveInjuries.length > 0 && (
                 <div className="flex items-center gap-1 text-[11px] text-brand-700 font-medium">
                   <Sparkles className="w-3 h-3 text-brand-600" />
@@ -281,8 +281,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-2 pt-2 border-t border-neutral-100">
-            <a href={getGoogleMapsDirectionsUrl(activeReport.location.lat, activeReport.location.lng)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-neutral-600 hover:text-neutral-900 font-medium">
+          <div className="flex items-center justify-between gap-2 pt-2 border-t border-stone-100">
+            <a href={getGoogleMapsDirectionsUrl(activeReport.location.lat, activeReport.location.lng)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-stone-600 hover:text-stone-900 font-medium">
               <ExternalLink className="w-3.5 h-3.5" />
               在 Google 地圖導航
             </a>
