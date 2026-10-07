@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StrayReport, NGOOrganization, UrgencyLevel, AnimalType } from '../types';
+import { StrayReport, NGOOrganization, UrgencyLevel } from '../types';
 import { getGoogleMapsDirectionsUrl } from '../utils/location';
-import { animalLabel } from '../utils/caseLabels';
+import { ANIMAL_FILTERS, AnimalFilter, matchesAnimalFilter, animalFilterLabel } from '../utils/caseLabels';
 import L from 'leaflet';
 import { ExternalLink, Sparkles, X } from 'lucide-react';
+import { AnimalIcon, animalIconSvg } from './AnimalIcons';
 
 interface InteractiveMapProps {
   reports: StrayReport[];
@@ -25,8 +26,6 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#39;');
 }
 
-const ANIMAL_EMOJI: Record<AnimalType, string> = { cat: '🐱', dog: '🐶', bird: '🕊️', other: '🐾' };
-const ANIMAL_FILTERS: AnimalType[] = ['cat', 'dog', 'bird'];
 
 const URGENCY_BTN: Record<UrgencyLevel, { active: string; idle: string; weight: string }> = {
   P0: { active: 'bg-rose-600 text-white', idle: 'text-rose-700 hover:bg-rose-50', weight: 'font-bold' },
@@ -41,7 +40,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
-  const [filterAnimal, setFilterAnimal] = useState<'all' | AnimalType>('all');
+  const [filterAnimal, setFilterAnimal] = useState<AnimalFilter>('all');
   const [filterUrgency, setFilterUrgency] = useState<'all' | UrgencyLevel>('all');
   const [showNGOs, setShowNGOs] = useState(true);
   const [activeReport, setActiveReport] = useState<StrayReport | null>(null);
@@ -55,7 +54,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
     if (!mapInstanceRef.current) {
       const defaultCenter: [number, number] = centerCoords ? [centerCoords.lat, centerCoords.lng] : [22.33, 114.17];
 
-      const map = L.map(mapContainerRef.current, { center: defaultCenter, zoom: 12, scrollWheelZoom: true });
+      const map = L.map(mapContainerRef.current, { center: defaultCenter, zoom: 12, scrollWheelZoom: true, zoomControl: false });
+      // 縮放掣放左下角：左上有篩選列、右下會彈出個案資料卡，兩邊都會遮住佢
+      L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution:
@@ -96,7 +97,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
     markersLayer.clearLayers();
 
     const filteredReports = reports.filter((r) => {
-      if (filterAnimal !== 'all' && r.animalType !== filterAnimal) return false;
+      if (!matchesAnimalFilter(r.animalType, filterAnimal)) return false;
       if (filterUrgency !== 'all' && r.urgency !== filterUrgency) return false;
       return true;
     });
@@ -106,20 +107,22 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
       const isP1 = report.urgency === 'P1';
       const bgCol = isP0 ? '#e11d48' : isP1 ? '#f59e0b' : '#10b981';
       const pulseAnimation = isP0 ? 'animation: pulse 1.5s infinite;' : '';
-      // emoji 同 urgency 都係受控 enum（rules 限制 P0/P1/P2），唔涉及用戶輸入
-      const emoji = ANIMAL_EMOJI[report.animalType] ?? '🐾';
+      // 動物 icon 係寫死嘅 SVG（animalType 只用嚟揀圖），urgency 亦都會 escape，唔涉及用戶輸入
+      const iconSvg = animalIconSvg(report.animalType, { className: 'w-6 h-6', active: true });
 
       const customIcon = L.divIcon({
         className: 'custom-case-pin',
         html: `
           <div style="
-            position: relative; width: 38px; height: 38px; background: ${bgCol};
-            border: 3px solid white; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; color: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 16px;
-            font-weight: bold; cursor: pointer; ${pulseAnimation}
+            position: relative; width: 40px; height: 40px; background: ${bgCol};
+            border: 2px solid white; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; ${pulseAnimation}
           ">
-            <span>${emoji}</span>
+            <span style="
+              width: 30px; height: 30px; border-radius: 50%; background: white;
+              display: flex; align-items: center; justify-content: center; color: #1c1917;
+            ">${iconSvg}</span>
             <span style="
               position: absolute; bottom: -6px; right: -6px; background: #1c1917;
               color: white; font-size: 10px; font-weight: 800; padding: 1px 4px;
@@ -127,8 +130,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
             ">${escapeHtml(report.urgency)}</span>
           </div>
         `,
-        iconSize: [38, 38],
-        iconAnchor: [19, 19],
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
       });
 
       const marker = L.marker([report.location.lat, report.location.lng], { icon: customIcon });
@@ -193,7 +196,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
     : [];
 
   const animalBtn = (active: boolean) =>
-    `px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
+    `inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
       active ? 'bg-brand-500 text-white' : 'text-stone-700 hover:bg-stone-100'
     }`;
 
@@ -207,7 +210,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
             </button>
             {ANIMAL_FILTERS.map((type) => (
               <button key={type} onClick={() => setFilterAnimal(type)} className={animalBtn(filterAnimal === type)}>
-                {ANIMAL_EMOJI[type]} {animalLabel(type)}
+                <AnimalIcon type={type} active={filterAnimal === type} className="w-5 h-5 -my-1" />
+                {animalFilterLabel(type)}
               </button>
             ))}
           </div>

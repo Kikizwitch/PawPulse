@@ -11,7 +11,9 @@
     "language": "Language",
     "adminActive": "Admin access active",
     "loginWithGoogle": "Sign in with Google",
-    "clickToLogout": "click to sign out"
+    "clickToLogout": "click to sign out",
+    "logoutConfirmTitle": "Sign out?",
+    "logoutConfirmBody": "Currently signed in as {{email}}"
   },
   "animal": {
     "cat": "Cat",
@@ -45,7 +47,7 @@
     },
     "photo": {
       "title": "Photo",
-      "hint": "Photograph the injury or the whole animal. Photos are compressed automatically",
+      "hint": "Photograph the injury or the whole animal",
       "choose": "Choose photo",
       "change": "Change photo",
       "take": "Take photo",

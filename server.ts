@@ -586,7 +586,7 @@ app.get("/api/places/details/:placeId", placesRateLimitMiddleware, async (req: R
     const lat = d.location?.latitude;
     const lng = d.location?.longitude;
     if (typeof lat !== "number" || typeof lng !== "number") {
-      res.status(502).json({ error: "此地點冇座標資料" });
+      res.status(502).json({ error: "此地點沒有座標資料" });
       return;
     }
     const address = String(d.formattedAddress ?? "");
@@ -899,13 +899,13 @@ app.post("/api/cases/send-confirmation-email", emailIpRateLimitMiddleware, async
       return;
     }
     if (!isFreshCase(caseSnap.data())) {
-      res.status(409).json({ error: "只可以喺通報後 15 分鐘內寄出確認信" });
+      res.status(409).json({ error: "只可在通報後 15 分鐘內寄出確認信" });
       return;
     }
 
     const email = cleanStr(contactSnap.data()?.reporterEmail, 254);
     if (!EMAIL_RE.test(email)) {
-      res.status(400).json({ error: "此案件冇有效電郵" });
+      res.status(400).json({ error: "此案件沒有有效的電郵地址" });
       return;
     }
     if (!(await claimOnce("email", caseId))) {

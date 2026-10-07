@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StrayReport, AnimalType, UrgencyLevel, CaseStatus } from '../types';
-import { statusLabel, animalLabel } from '../utils/caseLabels';
+import { StrayReport, UrgencyLevel, CaseStatus } from '../types';
+import { statusLabel, animalLabel, ANIMAL_FILTERS, AnimalFilter, matchesAnimalFilter, animalFilterLabel } from '../utils/caseLabels';
 import { getApiLang } from '../i18n';
 import { Search, Sparkles, MapPin, Clock, ShieldAlert, ChevronRight } from 'lucide-react';
+import { AnimalIcon } from './AnimalIcons';
 
 interface CaseFeedProps {
   reports: StrayReport[];
@@ -11,15 +12,6 @@ interface CaseFeedProps {
   onNavigateToMap: (coords: { lat: number; lng: number }) => void;
 }
 
-// emoji 唔使翻譯，留喺 code
-const ANIMAL_EMOJI: Record<AnimalType, string> = {
-  cat: '🐱',
-  dog: '🐶',
-  bird: '🕊️',
-  other: '🐾',
-};
-
-const ANIMAL_FILTERS: AnimalType[] = ['cat', 'dog', 'bird'];
 const URGENCY_FILTERS = ['all', 'P0', 'P1', 'P2'] as const;
 const STATUS_FILTERS = ['all', 'pending', 'in_progress', 'rescued', 'closed'] as const;
 
@@ -38,19 +30,19 @@ function formatTime(value: string | number | Date): string {
 }
 
 const animalPillClass = (active: boolean) =>
-  `px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+  `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
     active ? 'bg-brand-500 text-white' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
   }`;
 
 export const CaseFeed: React.FC<CaseFeedProps> = ({ reports, onSelectReport, onNavigateToMap }) => {
   const { t } = useTranslation(); // 轉語言時令 statusLabel()/animalLabel() 即刻更新
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAnimal, setSelectedAnimal] = useState<'all' | AnimalType>('all');
+  const [selectedAnimal, setSelectedAnimal] = useState<AnimalFilter>('all');
   const [selectedUrgency, setSelectedUrgency] = useState<'all' | UrgencyLevel>('all');
   const [selectedStatus, setSelectedStatus] = useState<'all' | CaseStatus>('all');
 
   const filteredReports = reports.filter((report) => {
-    if (selectedAnimal !== 'all' && report.animalType !== selectedAnimal) return false;
+    if (!matchesAnimalFilter(report.animalType, selectedAnimal)) return false;
     if (selectedUrgency !== 'all' && report.urgency !== selectedUrgency) return false;
     if (selectedStatus !== 'all' && report.status !== selectedStatus) return false;
     if (searchQuery.trim()) {
@@ -86,7 +78,8 @@ export const CaseFeed: React.FC<CaseFeedProps> = ({ reports, onSelectReport, onN
             </button>
             {ANIMAL_FILTERS.map((type) => (
               <button key={type} onClick={() => setSelectedAnimal(type)} className={animalPillClass(selectedAnimal === type)}>
-                {ANIMAL_EMOJI[type]} {animalLabel(type)}
+                <AnimalIcon type={type} active={selectedAnimal === type} className="w-5 h-5 -my-1" />
+                {animalFilterLabel(type)}
               </button>
             ))}
           </div>
@@ -188,8 +181,9 @@ export const CaseFeed: React.FC<CaseFeedProps> = ({ reports, onSelectReport, onN
                       </span>
                     </div>
 
-                    <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur text-white text-[11px] px-2 py-0.5 rounded-md">
-                      {ANIMAL_EMOJI[report.animalType] ?? '🐾'} {animalLabel(report.animalType, report.customAnimalName)}
+                    <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur text-white text-[11px] pl-1 pr-2 py-0.5 rounded-md flex items-center gap-1">
+                      <AnimalIcon type={report.animalType} active className="w-5 h-5" />
+                      {animalLabel(report.animalType, report.customAnimalName)}
                     </div>
                   </div>
 

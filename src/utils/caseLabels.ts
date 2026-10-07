@@ -21,6 +21,22 @@ export function animalLabel(type: AnimalType, customName?: string): string {
   return i18n.t(`animal.${type}`, { defaultValue: type });
 }
 
+// 動物篩選（個案頁、地圖共用）：同通報表單一樣只分貓／狗／其他／雀鳥。
+// 表單揀「其他／雀鳥」會存做 'other'，舊資料可能係 'bird'，所以 'other' 篩選兩樣都包。
+export type AnimalFilter = 'all' | 'cat' | 'dog' | 'other';
+export const ANIMAL_FILTERS: Exclude<AnimalFilter, 'all'>[] = ['cat', 'dog', 'other'];
+
+export function matchesAnimalFilter(type: AnimalType, filter: AnimalFilter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'other') return type === 'other' || type === 'bird';
+  return type === filter;
+}
+
+// 用返通報表單嘅字眼（「其他／雀鳥」），確保兩邊一致
+export function animalFilterLabel(filter: Exclude<AnimalFilter, 'all'>): string {
+  return i18n.t(`reportForm.animal.${filter}`, { defaultValue: filter });
+}
+
 // 日期跟用戶揀嘅語言格式化，例如「2026年10月7日 下午3:20」或「7 Oct 2026, 3:20 pm」
 export function formatDateTime(iso: string | undefined): string {
   if (!iso) return '';

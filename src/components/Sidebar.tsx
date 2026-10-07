@@ -1,10 +1,11 @@
 // src/components/Sidebar.tsx
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { PawPrint, MapPin, LayoutList, Building2, ShieldCheck, ShieldAlert, HeartPulse, LogIn, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { User } from 'firebase/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { ConfirmDialog } from './ConfirmDialog';
 
 export type AppTab = 'report' | 'map' | 'cases' | 'ngos' | 'admin';
 
@@ -55,12 +56,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
   const { user, isAdmin, signInWithGoogle, signOut } = useAuth();
   const { t } = useTranslation();
 
+  // 登出前要先確認，避免誤撳頭像就即刻登出
+  const [confirmingLogout, setConfirmingLogout] = useState(false);
+  const closeLogoutConfirm = useCallback(() => setConfirmingLogout(false), []);
+
   const handleAuthClick = () => {
     if (user) {
-      signOut().catch((err) => console.warn('Sign out failed:', err));
+      setConfirmingLogout(true);
     } else {
       signInWithGoogle().catch((err) => console.warn('Sign in failed:', err));
     }
+  };
+
+  const handleConfirmLogout = () => {
+    setConfirmingLogout(false);
+    signOut().catch((err) => console.warn('Sign out failed:', err));
   };
 
   const authTitle = user ? `${user.email ?? ''} (${t('nav.clickToLogout')})` : t('nav.loginWithGoogle');
@@ -158,7 +168,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
           </button>
 
           <div className="ml-auto flex items-center gap-1">
-            <LanguageSwitcher className="px-1" />
+            <LanguageSwitcher direction="row" className="px-1" />
 
             <button
               id="nav-guide-btn-mobile"
@@ -209,6 +219,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onOpe
           })}
         </div>
       </nav>
+
+      <ConfirmDialog
+        open={confirmingLogout && !!user}
+        title={t('nav.logoutConfirmTitle')}
+        message={t('nav.logoutConfirmBody', { email: user?.email ?? '' })}
+        confirmLabel={t('nav.logout')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={handleConfirmLogout}
+        onCancel={closeLogoutConfirm}
+      />
     </>
   );
 };

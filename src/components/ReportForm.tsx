@@ -368,9 +368,10 @@ export const ReportForm: React.FC<ReportFormProps> = ({ ngos, onSubmitReport, on
 
   return (
     <div id="report-form-container">
-      <form onSubmit={handleSubmit} className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-8 lg:gap-12 items-start">
+      {/* 手機都要用 grid-cols-1（即 minmax(0,1fr)）：預設嘅 auto 欄會俾 truncate 嘅長地址撐闊，闊過螢幕 */}
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-8 lg:gap-12 items-start">
         {/* 左欄：表單 */}
-        <div>
+        <div className="min-w-0">
           <FormSection title={t('reportForm.animal.title')} hint={t('reportForm.animal.hint')}>
             <div className="grid grid-cols-3 gap-3 max-w-md">
               {([
@@ -593,7 +594,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({ ngos, onSubmitReport, on
         </div>
 
         {/* 右欄：摘要＋送出 */}
-        <aside className="lg:sticky lg:top-24 rounded-2xl border border-stone-200 bg-stone-50 p-5 space-y-5">
+        <aside className="min-w-0 lg:sticky lg:top-24 rounded-2xl border border-stone-200 bg-stone-50 p-5 space-y-5">
           <div className="hidden lg:flex aspect-[4/3] rounded-xl overflow-hidden bg-stone-200/70 items-center justify-center text-stone-400">
             {photoPreview ? (
               <img src={photoPreview} alt="" className="w-full h-full object-cover" />

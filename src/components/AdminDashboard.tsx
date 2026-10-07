@@ -106,7 +106,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       !Number.isFinite(parsedLat) || parsedLat < -90 || parsedLat > 90 ||
       !Number.isFinite(parsedLng) || parsedLng < -180 || parsedLng > 180
     ) {
-      alert('請喺地址欄揀一個建議地址，或者手動填寫正確經緯度');
+      alert('請在地址欄選擇建議地址，或手動填寫正確的經緯度');
       return;
     }
 
@@ -171,7 +171,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {isDevMode && (
           <div className="pt-4 border-t border-stone-200 mt-4">
-            <p className="text-2xs text-stone-400 mb-2">[開發模式限定] 冇 Google 帳號時可快速模擬</p>
+            <p className="text-2xs text-stone-400 mb-2">[開發模式限定] 沒有 Google 帳號時可快速模擬</p>
             <button
               onClick={() => simulateAdminMode(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 text-2xs font-bold transition-colors cursor-pointer"
@@ -572,9 +572,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   }}
                   onEnter={() => {}}
                   bias={null}
-                  placeholder="輸入機構地址，揀建議地址會自動填經緯度"
+                  placeholder="輸入機構地址，選擇建議地址後會自動填入經緯度"
                 />
-                <p className="text-2xs text-stone-400 mt-1">揀咗建議地址之後，下面嘅分區同經緯度會自動填好。</p>
+                <p className="text-2xs text-stone-400 mt-1">選擇建議地址後，下方的分區及經緯度會自動填入。</p>
               </div>
 
 
