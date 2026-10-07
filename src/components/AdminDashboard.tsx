@@ -577,7 +577,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <p className="text-2xs text-stone-400 mt-1">選擇建議地址後，下方的分區及經緯度會自動填入。</p>
               </div>
 
-
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-bold mb-1">分區</label>

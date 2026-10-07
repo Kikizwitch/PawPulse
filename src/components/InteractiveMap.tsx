@@ -26,7 +26,6 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#39;');
 }
 
-
 const URGENCY_BTN: Record<UrgencyLevel, { active: string; idle: string; weight: string }> = {
   P0: { active: 'bg-rose-600 text-white', idle: 'text-rose-700 hover:bg-rose-50', weight: 'font-bold' },
   P1: { active: 'bg-amber-500 text-white', idle: 'text-amber-700 hover:bg-amber-50', weight: 'font-bold' },

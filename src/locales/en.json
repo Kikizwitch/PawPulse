@@ -47,11 +47,18 @@
     },
     "photo": {
       "title": "Photo",
-      "hint": "Photograph the injury or the whole animal",
+      "hint": "Up to {{max}} photos from different angles. The first one is the cover shown in the case list and map.",
       "choose": "Choose photo",
       "change": "Change photo",
       "take": "Take photo",
-      "previewAlt": "Photo preview"
+      "previewAlt": "Photo preview",
+      "add": "Add",
+      "remove": "Remove this photo",
+      "cover": "Cover",
+      "setCover": "Set as cover",
+      "count": "{{n}} / {{max}} photos",
+      "limitReached": "You can upload up to {{max}} photos. Extra photos were skipped.",
+      "thumbAlt": "Photo {{n}}"
     },
     "location": {
       "title": "Location",
@@ -88,7 +95,8 @@
       "notAdded": "Not added",
       "notConfirmed": "Not confirmed",
       "filled": "Filled in",
-      "notFilled": "Not filled in"
+      "notFilled": "Not filled in",
+      "photoCount": "{{n}} added"
     },
     "captcha": {
       "label": "Verification code",
@@ -110,6 +118,7 @@
       "searchUnavailable": "Address search is unavailable right now. Please try again later, or tap “Use GPS”.",
       "preparing": "Preparing your report…",
       "uploading": "Uploading photo…",
+      "uploadingN": "Uploading photos ({{done}}/{{total}})…",
       "saving": "Saving your report and analysing injuries with AI…"
     },
     "errors": {
@@ -155,7 +164,7 @@
     "loading": "Loading...",
     "error": "An error occurred, please try again later"
   },
-    "addressSearch": {
+  "addressSearch": {
     "placeholder": "Enter an address, building or landmark, e.g. Langham Place, Mong Kok",
     "suggestError": "Address suggestions are unavailable right now. You can still type the address and tap “Locate”.",
     "resolveError": "Couldn't get coordinates for this address. Please pick it again or tap “Locate”.",
@@ -204,7 +213,7 @@
     "footerName": "PawPulse · Real-time stray animal reporting & rescue matching",
     "footerPrivacy": "We handle reporter data in accordance with applicable personal data protection laws. For serious road accidents or animals in critical condition, {{hint}}."
   },
-    "location": {
+  "location": {
     "invalidCoords": "Invalid coordinates",
     "unknownDistrict": "District unconfirmed",
     "coordsFallback": "Coordinates ({{lat}}, {{lng}})"
@@ -254,7 +263,7 @@
     "precautions": "Safety precautions: ",
     "listSeparator": "; "
   },
-    "caseModal": {
+  "caseModal": {
     "caseBadge": "{{level}} case",
     "copyLinkTitle": "Copy this case's tracking link",
     "linkCopied": "Link copied",
@@ -278,7 +287,15 @@
     "aiNoResponseTitle": "No response from Gemini",
     "aiNoResponseBody": "AI injury analysis is unavailable. Please act according to the situation on site.",
     "navigate": "Open Google Maps directions",
-    "closeView": "Close"
+    "closeView": "Close",
+    "gallery": {
+      "prev": "Previous photo",
+      "next": "Next photo",
+      "counter": "{{n}} / {{total}}",
+      "photoAlt": "{{title}} – photo {{n}}",
+      "noPhoto": "No photo",
+      "goTo": "View photo {{n}}"
+    }
   },
   "ngoMatch": {
     "headerTitle": "Nearby NGOs matched automatically ({{n}} recommended)",
@@ -312,7 +329,7 @@
       "animalNames": { "cat": "Cat", "dog": "Dog", "bird": "Bird", "other": "Animal" }
     }
   },
-    "guide": {
+  "guide": {
     "title": "On-site first aid guide",
     "subtitle": "What to do first when you find a stray or injured animal",
     "close": "Close",
@@ -376,5 +393,4 @@
     "title": "PawPulse - Real-time Stray Animal Reporting & AI Rescue Matching",
     "description": "Report stray animals in real time. AI helps assess injuries and matches nearby rescue organisations."
   }
-
 }

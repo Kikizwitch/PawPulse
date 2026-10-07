@@ -4,8 +4,7 @@
 
 ## 語言規範
 
-- **用戶睇到嘅中文（UI 文字、`src/locales/zh.json`、server 回傳嘅錯誤訊息）一律用標準書面語（繁體中文）**，例如「不」「的」「在」「沒有」「選擇」「按」，**唔好**用廣東話口語（「唔」「嘅」「喺」「冇」「揀」「撳」等）。
-- 程式註解同 commit message 可以照用廣東話，同現有程式碼風格一致。
+- **主要語言係廣東話（繁體中文）**。UI 文字、錯誤訊息、程式註解一律用廣東話書面語（例如「唔」「嘅」「喺」「冇」），同現有程式碼風格一致。
 - 預設語系 `zh-HK`。地址、區名同 Gemini 分析結果會跟市民瀏覽器語言（`src/utils/locale.ts` / `server.ts` 嘅 `resolveLang`）。
 - Firestore collection 名、type 名、API 路徑用英文。
 
@@ -65,8 +64,8 @@ security_spec.md           # 威脅模型（Dirty Dozen payloads）
 
 ## 報案流程（改動前必讀）
 
-1. `ReportForm` 生成 Case ID：`PW-<base36 時間>-<4 位隨機>`（要符合 `storage.rules` 嘅 `^PW-[A-Z0-9]{1,20}-[A-Z0-9]{1,8}\.jpg$`）。
-2. 相片經 `compressImage` 轉成 JPEG（≤1280px），上傳去 `animal-reports/{caseId}.jpg`；失敗就 fallback 去 `POST /api/upload-photo`。
+1. `ReportForm` 生成 Case ID：`PW-<base36 時間>-<4 位隨機>`（storage.rules：資料夾 `^PW-[A-Z0-9]{1,20}-[A-Z0-9]{1,8}$`、檔名 `^[0-4][.]jpg$`）。
+2. 最多 5 張相，經 `compressImage` 轉成 JPEG（≤1280px），用 `uploadCasePhotos` 上傳去 `animal-reports/{caseId}/{0-4}.jpg`；失敗就 fallback 去 `POST /api/upload-photo`（帶 `index`）。第 1 張係封面，同時寫入 `photoUrl` / `storagePath`；全部相寫入 `photos[]`。舊案件只有 `animal-reports/{caseId}.jpg`，用 `getCasePhotos()` 統一讀取。AI 分析會將全部相放入同一個 Gemini request。
 3. `createCaseInFirestore` 用 **writeBatch** 同時寫 `case/{id}` 同 `private/contact`。Rules 強制：`status == 'pending'`、`urgency == 'P1'`、`createdAt == request.time`、`aiAnalysis`/`geminiResponse`/`dispatchedToNGO` 要係 null。
 4. `POST /api/cases/:caseId/analyze`：server 由 Storage 讀相片（唔信前端傳嘅圖）→ Gemini → 逐個欄位清洗 → 用 Admin SDK 寫返 `aiAnalysis` 同 `urgency`。
 5. 有電郵就 `POST /api/cases/send-confirmation-email`。
