@@ -13,7 +13,9 @@
     "loginWithGoogle": "Sign in with Google",
     "clickToLogout": "click to sign out",
     "logoutConfirmTitle": "Sign out?",
-    "logoutConfirmBody": "Currently signed in as {{email}}"
+    "logoutConfirmBody": "Currently signed in as {{email}}",
+    "myCases": "My Cases",
+    "ngoWorkspace": "NGO Desk"
   },
   "animal": {
     "cat": "Cat",
@@ -132,7 +134,8 @@
       "photoProcessFailed": "Couldn’t process this photo. Please try another one",
       "photoUrlTooLong": "The photo didn’t finish uploading. Please choose the photo again and retry.",
       "saveFailed": "Couldn’t save the report. Please try again later.",
-      "submitFailed": "Something went wrong while submitting. Please check your connection and try again."
+      "submitFailed": "Something went wrong while submitting. Please check your connection and try again.",
+      "badEmail": "Please enter a valid email, e.g. user@example.com"
     },
     "modal": {
       "title": "Privacy and AI Veterinary Disclaimer",
@@ -190,8 +193,11 @@
       "map": { "title": "Rescue map", "subtitle": "Live view of open cases (P0 critical / P1 medical / P2 stable) and NGO locations" },
       "cases": { "title": "Cases", "subtitle": "{{count}} cases · live sync" },
       "ngos": { "title": "Partners", "subtitle": "{{count}} rescue organisations and hotlines" },
-      "admin": { "title": "Admin", "subtitle": "Case dispatch, NGO capacity and system logs" }
+      "admin": { "title": "Admin", "subtitle": "Case dispatch, NGO capacity and system logs" },
+      "mycases": { "title": "My Cases", "subtitle": "Track the cases you reported" },
+      "ngo": { "title": "NGO Desk", "subtitle": "Accept and follow up rescue cases" }
     },
+    "comingSoon": "Coming soon",
     "urgentBadge": "{{count}} P0 critical",
     "newReport": "New report",
     "close": "Close",
@@ -212,6 +218,30 @@
     "dispatchFailed": "Failed to notify the NGO. Please try again later or call the NGO hotline directly.",
     "footerName": "PawPulse · Real-time stray animal reporting & rescue matching",
     "footerPrivacy": "We handle reporter data in accordance with applicable personal data protection laws. For serious road accidents or animals in critical condition, {{hint}}."
+  },
+  "login": {
+    "title": "Sign in to PawPulse",
+    "subtitle": "Sign in to see content for your account.",
+    "google": "Continue with Google",
+    "or": "or",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "forgot": "Forgot password?",
+    "resetTitle": "Reset password",
+    "resetBody": "Enter the email you sign in with and we'll send you a reset link.",
+    "resetSubmit": "Send reset link",
+    "resetSent": "If this email is registered, a reset link has been sent. Please check your inbox (and spam folder).",
+    "back": "Back to sign in",
+    "close": "Close",
+    "errors": {
+      "invalid": "Incorrect email or password.",
+      "tooMany": "Too many attempts. Please try again later.",
+      "network": "Network error. Please check your connection and try again.",
+      "invalidEmail": "Please enter a valid email address.",
+      "popupBlocked": "The sign-in window was blocked. Please allow pop-ups and try again.",
+      "generic": "Sign-in failed. Please try again later."
+    }
   },
   "location": {
     "invalidCoords": "Invalid coordinates",
@@ -392,5 +422,39 @@
   "meta": {
     "title": "PawPulse - Real-time Stray Animal Reporting & AI Rescue Matching",
     "description": "Report stray animals in real time. AI helps assess injuries and matches nearby rescue organisations."
+  },
+  "ngoWorkspace": {
+    "orgLabel": "Organisation",
+    "orgMissing": "Your organisation record could not be found. Please contact an administrator.",
+    "tabOpen": "Open ({{n}})",
+    "tabMine": "Ours ({{n}})",
+    "tabOthers": "Taken by others ({{n}})",
+    "emptyOpen": "No open cases right now.",
+    "emptyMine": "Your organisation hasn't accepted any cases yet.",
+    "emptyOthers": "No cases have been accepted by other organisations.",
+    "accept": "Accept case",
+    "accepting": "Working…",
+    "acceptConfirm": "Accept case {{id}} for your organisation? The reporter will be notified by email.",
+    "acceptSuccess": "Case accepted.",
+    "acceptSuccessEmailed": "Case accepted and the reporter has been notified by email.",
+    "alreadyTaken": "This case has already been accepted by another organisation.",
+    "acceptFailed": "Could not accept the case. Please try again later.",
+    "acceptedBy": "Accepted by: {{name}}",
+    "updateStatus": "Update progress",
+    "viewDetails": "View details",
+    "readOnly": "Only the accepting organisation can update",
+    "canChange": "You can update"
+  },
+  "myCases": {
+    "loading": "Loading your cases…",
+    "loadFailed": "Unable to load your cases right now. Please try again later.",
+    "count": "{{n}} report(s)",
+    "emptyTitle": "No reports yet",
+    "emptyBody": "Cases reported with this email will appear here so you can follow their progress.",
+    "waiting": "Waiting for a rescue organisation",
+    "acceptedBy": "Handled by {{ngo}}",
+    "reportedAt": "Reported: {{time}}",
+    "viewDetails": "View details",
+    "newReport": "New report"
   }
 }

@@ -13,7 +13,9 @@
         "loginWithGoogle": "使用 Google 登入",
         "clickToLogout": "按此登出",
         "logoutConfirmTitle": "確定要登出嗎？",
-        "logoutConfirmBody": "目前登入帳戶：{{email}}"
+        "logoutConfirmBody": "目前登入帳戶：{{email}}",
+        "myCases": "我的案件",
+        "ngoWorkspace": "NGO 工作台"
     },
     "animal": {
         "cat": "貓",
@@ -132,7 +134,8 @@
             "photoProcessFailed": "相片處理失敗，請更換相片後再試",
             "photoUrlTooLong": "相片尚未上傳完成，請重新選擇相片後再試。",
             "saveFailed": "案件儲存失敗，請稍後再試一次。",
-            "submitFailed": "通報送出時發生問題，請檢查網絡後再試。"
+            "submitFailed": "通報送出時發生問題，請檢查網絡後再試。",
+            "badEmail": "電郵格式不正確，例如 user@example.com"
         },
         "modal": {
             "title": "法律私隱與 AI 獸醫免責聲明",
@@ -146,6 +149,30 @@
             "p0Call": "建議直接致電 {{name}} <b>{{phone}}</b> 尋求即時救助。",
             "p0Local": "請直接聯絡當地動物救援機構、獸醫診所或警方。",
             "understood": "我已理解並關閉"
+        }
+    },
+    "login": {
+    "title": "登入 PawPulse",
+    "subtitle": "登入後可查看與你身份相關的內容。",
+    "google": "以 Google 帳號登入",
+    "or": "或",
+    "email": "電郵地址",
+    "password": "密碼",
+    "submit": "登入",
+    "forgot": "忘記密碼？",
+    "resetTitle": "重設密碼",
+    "resetBody": "輸入登入用的電郵地址，我們會寄出重設密碼連結。",
+    "resetSubmit": "寄出重設連結",
+    "resetSent": "如果此電郵已註冊，重設密碼連結已寄出，請檢查收件匣（包括垃圾郵件）。",
+    "back": "返回登入",
+    "close": "關閉",
+    "errors": {
+        "invalid": "電郵或密碼不正確。",
+        "tooMany": "嘗試次數過多，請稍後再試。",
+        "network": "網絡連線失敗，請檢查網絡後再試。",
+        "invalidEmail": "請輸入正確的電郵地址。",
+        "popupBlocked": "登入視窗被瀏覽器封鎖，請允許彈出視窗後再試。",
+        "generic": "登入失敗，請稍後再試。"
         }
     },
     "cases": {
@@ -190,8 +217,11 @@
             "map": { "title": "救援地圖", "subtitle": "即時顯示待救援個案（P0 危急／P1 醫療／P2 穩定）及 NGO 位置" },
             "cases": { "title": "個案動態", "subtitle": "共 {{count}} 宗 · 實時同步" },
             "ngos": { "title": "合作機構", "subtitle": "{{count}} 間救助機構及熱線" },
-            "admin": { "title": "後台管理", "subtitle": "個案調度、NGO 容量及系統紀錄" }
+            "admin": { "title": "後台管理", "subtitle": "個案調度、NGO 容量及系統紀錄" },
+            "mycases": { "title": "我的案件", "subtitle": "查看你通報過的案件及最新進度" },
+            "ngo": { "title": "NGO 工作台", "subtitle": "接手及跟進救援案件" }
         },
+        "comingSoon": "此功能即將推出",
         "urgentBadge": "{{count}} 宗 P0 危急",
         "newReport": "新通報",
         "close": "關閉",
@@ -392,5 +422,40 @@
     "meta": {
         "title": "PawPulse - 流浪動物即時通報與 AI 救助媒合平台",
         "description": "流浪動物即時通報與 AI 智慧救援媒合平台，快速辨識傷病狀況並自動配對鄰近合適 NGO。"
+    },
+    "ngoWorkspace": {
+        "orgLabel": "所屬機構",
+        "orgMissing": "找不到你所屬的機構資料，請聯絡管理員。",
+        "tabOpen": "待接手（{{n}}）",
+        "tabMine": "本機構跟進中（{{n}}）",
+        "tabOthers": "其他機構已接手（{{n}}）",
+        "emptyOpen": "暫時沒有待接手的案件。",
+        "emptyMine": "你的機構仍未接手任何案件。",
+        "emptyOthers": "暫時沒有其他機構接手的案件。",
+        "accept": "接手此案件",
+        "accepting": "處理中…",
+        "acceptConfirm": "確定由你的機構接手案件 {{id}}？接手後會以電郵通知報案人。",
+        "acceptSuccess": "已接手案件。",
+        "acceptSuccessEmailed": "已接手案件，並已電郵通知報案人。",
+        "alreadyTaken": "此案件已由其他機構接手。",
+        "acceptFailed": "接手失敗，請稍後再試。",
+        "acceptedBy": "接手機構：{{name}}",
+        "updateStatus": "更新進度",
+        "viewDetails": "查看詳情",
+        "readOnly": "只限接手機構更新",
+        "canChange": "你可以更新"
+    },
+    "myCases": {
+        "loading": "載入緊你嘅案件…",
+        "loadFailed": "暫時讀取唔到你嘅案件，請稍後再試。",
+        "count": "共 {{n}} 宗通報",
+        "emptyTitle": "你仲未有通報紀錄",
+        "emptyBody": "用呢個電郵通報嘅案件會自動喺呢度顯示，方便你跟進進度。",
+        "waiting": "等待救援機構接手",
+        "acceptedBy": "由 {{ngo}} 接手跟進",
+        "reportedAt": "通報時間：{{time}}",
+        "viewDetails": "查看詳情",
+        "newReport": "新增通報"
     }
+
 }

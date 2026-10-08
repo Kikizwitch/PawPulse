@@ -265,6 +265,11 @@ export const ReportForm: React.FC<ReportFormProps> = ({ ngos, onSubmitReport, on
     e.preventDefault();
     setSubmitErrorKey(null);
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reporterEmail.trim())) {
+      alert(t('reportForm.errors.badEmail'));
+      return;
+    }
+
     if (isProcessingPhotos) return;
 
     if (photos.length === 0) {

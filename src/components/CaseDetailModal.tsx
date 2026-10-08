@@ -8,9 +8,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { fetchCaseContact, ReporterContactInfo, rankFirestoreNGOs } from '../services/caseService';
 import { statusLabel, CASE_STATUSES } from '../utils/caseLabels';
 import { getApiLang } from '../i18n';
-import { X, MapPin, Phone, User, Clock, Navigation, Mail, Copy, Check, ShieldCheck, Trash2, Lock } from 'lucide-react';
+import {
+  X, MapPin, Phone, User, Clock, Navigation, Mail, Copy, Check, ShieldCheck, Trash2, Lock,
+  Building2, Handshake, Loader2,
+} from 'lucide-react';
 import { PhotoGallery } from './PhotoGallery';
 import { getCasePhotos } from '../utils/casePhotos';
+import { NGO_STATUSES } from './NgoWorkspace';
 
 interface CaseDetailModalProps {
   report: StrayReport;
@@ -19,6 +23,7 @@ interface CaseDetailModalProps {
   onUpdateStatus?: (reportId: string, newStatus: CaseStatus) => void;
   onDispatchToNGO?: (ngoId: string, ngoName: string) => Promise<void>;
   onDeleteCase?: (reportId: string) => void;
+  onAcceptCase?: (reportId: string) => Promise<void>;
 }
 
 // 舊版寫入 Firestore 嘅佔位字（係資料，唔係介面文字），見到就當冇電話
@@ -39,17 +44,26 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
   onUpdateStatus,
   onDispatchToNGO,
   onDeleteCase,
+  onAcceptCase,
 }) => {
   const { t } = useTranslation();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isNgo, ngoId } = useAuth();
   const [activeTab, setActiveTab] = useState<'ai' | 'ngos'>('ai');
   const [copiedLink, setCopiedLink] = useState(false);
+  const [accepting, setAccepting] = useState(false);
 
   const [contactInfo, setContactInfo] = useState<ReporterContactInfo | null>(null);
   const [loadingContact, setLoadingContact] = useState(false);
 
+  // 自己機構接手咗嘅案件
+  const isMyCase = isNgo && !!ngoId && report.acceptedBy?.ngoId === ngoId;
+  // 聯絡資料：admin 或者接手機構先睇到（rules 亦會檢查）
+  const canSeeContact = isAdmin || isMyCase;
+  const canAccept =
+    isNgo && !report.acceptedBy && report.status !== 'rescued' && report.status !== 'closed' && !!onAcceptCase;
+
   useEffect(() => {
-    if (!isAdmin) {
+    if (!canSeeContact) {
       setContactInfo(null);
       return;
     }
@@ -65,7 +79,7 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [isAdmin, report.id]);
+  }, [canSeeContact, report.id]);
 
   const enrichedReport: StrayReport = {
     ...report,
@@ -102,7 +116,18 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
       });
   };
 
-  const canManageStatus = isAdmin && typeof onUpdateStatus === 'function';
+  const handleAccept = async () => {
+    if (!onAcceptCase) return;
+    setAccepting(true);
+    try {
+      await onAcceptCase(report.id);
+    } finally {
+      setAccepting(false);
+    }
+  };
+
+  const canManageStatus = (isAdmin || isMyCase) && typeof onUpdateStatus === 'function';
+  const statusOptions: readonly CaseStatus[] = isAdmin ? CASE_STATUSES : NGO_STATUSES;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs overflow-y-auto" id="case-detail-modal">
@@ -174,7 +199,7 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
                 </div>
 
                 <div className="flex items-center gap-4 flex-wrap pt-2 border-t border-stone-200/60 text-2xs">
-                  {isAdmin ? (
+                  {canSeeContact ? (
                     <>
                       <div className="flex items-center gap-1.5 text-stone-600">
                         <User className="w-3.5 h-3.5 text-stone-400" />
@@ -221,22 +246,29 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-brand-50/60 border border-brand-200">
-                <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+              <div className="p-3.5 rounded-2xl bg-brand-50/60 border border-brand-200 space-y-2.5">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
                   <span className="text-xs font-bold text-brand-900 flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-brand-600" />
                     {t('caseModal.statusTitle')}
                   </span>
                   {canManageStatus && (
                     <span className="text-2xs bg-brand-200 text-brand-900 px-2 py-0.5 rounded-full font-bold">
-                      {t('caseModal.adminCanChange')}
+                      {isAdmin ? t('caseModal.adminCanChange') : t('ngoWorkspace.canChange')}
                     </span>
                   )}
                 </div>
 
+                {report.acceptedBy && (
+                  <p className="text-2xs text-stone-700 flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-stone-500" />
+                    {t('ngoWorkspace.acceptedBy', { name: report.acceptedBy.ngoName })}
+                  </p>
+                )}
+
                 {canManageStatus ? (
                   <div className="flex flex-wrap gap-2">
-                    {CASE_STATUSES.map((status) => (
+                    {statusOptions.map((status) => (
                       <button
                         key={status}
                         type="button"
@@ -254,8 +286,21 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
                 ) : (
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-stone-300 text-xs font-bold text-stone-700 flex-wrap">
                     {statusLabel(report.status)}
-                    <span className="text-2xs text-stone-400 font-normal">{t('caseModal.adminOnly')}</span>
+                    <span className="text-2xs text-stone-400 font-normal">
+                      {isNgo ? t('ngoWorkspace.readOnly') : t('caseModal.adminOnly')}
+                    </span>
                   </div>
+                )}
+
+                {canAccept && (
+                  <button
+                    onClick={handleAccept}
+                    disabled={accepting}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-stone-950 text-xs font-bold transition-colors"
+                  >
+                    {accepting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Handshake className="w-4 h-4" />}
+                    {accepting ? t('ngoWorkspace.accepting') : t('ngoWorkspace.accept')}
+                  </button>
                 )}
               </div>
             </div>
