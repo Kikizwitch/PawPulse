@@ -168,28 +168,6 @@ export async function fetchCaseContact(caseId: string): Promise<ReporterContactI
   }
 }
 
-export async function updateCaseStatusInFirestore(
-  caseId: string,
-  newStatus: CaseStatus,
-  dispatchedToNGO?: StrayReport['dispatchedToNGO']
-): Promise<void> {
-  try {
-    const caseRef = doc(db, CASE_COLLECTION, caseId);
-    const updatePayload: Record<string, unknown> = {
-      status: newStatus,
-      updatedAt: serverTimestamp(),
-    };
-    if (dispatchedToNGO !== undefined) {
-      updatePayload.dispatchedToNGO = dispatchedToNGO;
-    }
-    await updateDoc(caseRef, updatePayload);
-    monitoring.log('info', 'firestore', `Updated case #${caseId} status to ${newStatus}`);
-  } catch (err) {
-    monitoring.captureError(err, { caseId, newStatus });
-    handleFirestoreError(err, OperationType.UPDATE, `${CASE_COLLECTION}/${caseId}`);
-  }
-}
-
 /** 交由 server 一次過刪除案件、聯絡資料同 Storage 相片（只限 admin） */
 export async function deleteCaseInFirestore(caseId: string): Promise<void> {
   try {

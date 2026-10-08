@@ -1,4 +1,3 @@
-// src/components/LoginModal.tsx
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, ArrowLeft, Loader2, LogIn } from 'lucide-react';
