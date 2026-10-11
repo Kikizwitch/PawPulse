@@ -17,6 +17,13 @@
     "myCases": "My Cases",
     "ngoWorkspace": "NGO Desk"
   },
+  "caseTag": {
+    "stray": "Stray",
+    "injured": "Injured",
+    "trapped": "Trapped",
+    "juvenile": "Young",
+    "adult": "Adult"
+  },
   "animal": {
     "cat": "Cat",
     "dog": "Dog",
@@ -74,6 +81,7 @@
     "description": {
       "title": "Situation",
       "hint": "Where the animal is, any injuries, how alert it seems",
+      "tagsLabel": "Tags (pick any, added to the first line of the situation)",
       "placeholder": "e.g. A cat is hiding in a planter and won’t put weight on its left leg; or a dog may have been hit by a car and is breathing fast…"
     },
     "contact": {
@@ -254,6 +262,7 @@
     "allCount": "All ({{n}})",
     "urgencyFilter": "Urgency:",
     "statusFilter": "Status:",
+    "tagFilter": "Tags:",
     "emptyTitle": "No reports yet",
     "emptyBody": "All case data and photos sync in real time. New reports will appear here as soon as they're submitted.",
     "noMatchTitle": "No cases match your filters",
@@ -390,6 +399,7 @@
   },
   "map": {
     "allSpecies": "All species",
+    "tagFilter": "Tags",
     "allLevels": "All levels",
     "urgencyShort": { "P0": "P0 Critical", "P1": "P1 Medical", "P2": "P2 Stable" },
     "showNgos": "Show rescue organisations (NGOs)",

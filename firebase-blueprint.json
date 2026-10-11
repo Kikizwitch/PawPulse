@@ -9,6 +9,13 @@
         "title": { "type": "string", "minLength": 1, "maxLength": 200 },
         "animalType": { "type": "string", "enum": ["cat", "dog", "bird", "other"] },
         "customAnimalName": { "type": "string", "maxLength": 100, "description": "animalType 係 other 時嘅自訂名稱" },
+        "tags": {
+          "type": "array",
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["stray", "injured", "trapped", "juvenile", "adult"] },
+          "description": "報案人揀嘅標籤（可多選），用嚟篩選；冇揀就唔會有呢個欄位"
+        },
         "photoUrl": { "type": "string", "maxLength": 2048, "description": "封面，必須等於 photos[0].url" },
         "storagePath": { "type": "string", "maxLength": 256, "description": "封面路徑，必須等於 photos[0].path" },
         "photos": {

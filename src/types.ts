@@ -1,6 +1,8 @@
 // ⚠️ 已加入 'bird'，同 firestore.rules 及 entities schema 對齊。
 // 如果產品範圍確實不打算處理雀鳥案件，請反過來喺 Rules／schema 移除 bird。
 export type AnimalType = 'cat' | 'dog' | 'bird' | 'other';
+// 報案人喺「現場狀況」揀嘅標籤（可以揀多個），用嚟喺地圖同個案頁篩選
+export type CaseTag = 'stray' | 'injured' | 'trapped' | 'juvenile' | 'adult';
 
 export type UrgencyLevel = 'P0' | 'P1' | 'P2'; // P0: 極度緊急(重傷/瀕危), P1: 需醫療關注(骨折/明顯傷病), P2: 穩定(走失/幼崽/普通救助)
 
@@ -80,6 +82,7 @@ export interface StrayReport {
   title: string;
   animalType: AnimalType;
   customAnimalName?: string;
+  tags?: CaseTag[];
   photoUrl: string; // Cloud Storage public URL or served URL
   storagePath?: string; // Cloud Storage object path linked to this case
   photos: CasePhoto[];   // 全部相（第 1 張 = photoUrl 封面）

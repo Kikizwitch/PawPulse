@@ -17,6 +17,13 @@
         "myCases": "我的案件",
         "ngoWorkspace": "NGO 工作台"
     },
+    "caseTag": {
+        "stray": "流浪動物",
+        "injured": "受傷動物",
+        "trapped": "被困動物",
+        "juvenile": "幼年",
+        "adult": "成年"
+    },
     "animal": {
         "cat": "貓",
         "dog": "狗",
@@ -74,6 +81,7 @@
         "description": {
             "title": "現場狀況",
             "hint": "動物所在位置、受傷情況及精神狀態",
+            "tagsLabel": "標籤（可多選，會加入現場狀況第一行）",
             "placeholder": "例如：貓咪蜷縮在花槽內，左腳不敢著地；或狗隻疑似被車撞倒，呼吸急促…"
         },
         "contact": {
@@ -254,6 +262,7 @@
         "allCount": "全部 ({{n}})",
         "urgencyFilter": "緊急等級：",
         "statusFilter": "狀態：",
+        "tagFilter": "標籤：",
         "emptyTitle": "目前暫無任何通報個案",
         "emptyBody": "所有個案資料與相片即時同步。一旦有市民通報，會立即在此顯示。",
         "noMatchTitle": "沒有符合篩選條件的個案",
@@ -390,6 +399,7 @@
     },
     "map": {
         "allSpecies": "全部物種",
+        "tagFilter": "標籤",
         "allLevels": "所有等級",
         "urgencyShort": { "P0": "P0 危急", "P1": "P1 醫療", "P2": "P2 穩定" },
         "showNgos": "顯示救助機構 (NGO)",
