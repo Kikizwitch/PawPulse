@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { AnimalIcon } from './AnimalIcons';
 import { PhotoGallery } from './PhotoGallery';
+import { GeminiIcon, CareIcon } from './BrandIcons';
 import { getCasePhotos } from '../utils/casePhotos';
 import { NGO_STATUSES } from './NgoWorkspace';
 
@@ -331,7 +332,10 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
                 activeTab === 'ai' ? 'border-brand-600 text-brand-600' : 'border-transparent text-stone-500 hover:text-stone-800'
               }`}
             >
-              {t('caseModal.tabAi')}
+              <span className="inline-flex items-center gap-1.5">
+                <GeminiIcon className="w-4 h-4 shrink-0" />
+                {t('caseModal.tabAi')}
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('ngos')}
@@ -339,7 +343,10 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
                 activeTab === 'ngos' ? 'border-brand-600 text-brand-600' : 'border-transparent text-stone-500 hover:text-stone-800'
               }`}
             >
-              {t('caseModal.tabNgos', { n: liveMatchedNGOs.length })}
+              <span className="inline-flex items-center gap-1.5">
+                <CareIcon className="w-5 h-5 shrink-0" />
+                {t('caseModal.tabNgos', { n: liveMatchedNGOs.length })}
+              </span>
             </button>
           </div>
 
