@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { StrayReport, NGOOrganization, CaseStatus, AnimalType, NGOCapacityStatus, NgoAccount } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { monitoring, SystemLogEvent } from '../utils/monitoring';
@@ -31,6 +32,7 @@ import AddressAutocomplete from './AddressAutocomplete';
 interface AdminDashboardProps {
   reports: StrayReport[];
   ngos: NGOOrganization[];
+  onSelectReport: (report: StrayReport) => void; // 撳標題開個案詳情 pop up
   onUpdateCaseStatus: (caseId: string, status: CaseStatus) => void;
   onDeleteCase: (caseId: string) => void;
   onUpdateNGOCapacity: (ngoId: string, capacity: NGOCapacityStatus) => void;
@@ -60,12 +62,14 @@ const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   reports,
   ngos,
+  onSelectReport,
   onUpdateCaseStatus,
   onDeleteCase,
   onUpdateNGOCapacity,
   onCreateNGO,
   onDeleteNGO,
 }) => {
+  const { t } = useTranslation();
   const { user, isAdmin, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<'cases' | 'ngos' | 'logs'>('cases');
   const [logs, setLogs] = useState<SystemLogEvent[]>(monitoring.getRecentLogs());
@@ -393,7 +397,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       />
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-sm text-stone-900">{c.title}</span>
+                          <button
+                            type="button"
+                            onClick={() => onSelectReport(c)}
+                            title={t('adminDashboard.viewDetails')}
+                            className="font-bold text-sm text-stone-900 text-left hover:underline cursor-pointer"
+                          >
+                            {c.title}
+                          </button>
                           <span className={`px-2 py-0.5 rounded-full text-2xs font-bold text-white ${
                             c.urgency === 'P0' ? 'bg-rose-600' : c.urgency === 'P1' ? 'bg-amber-500' : 'bg-emerald-600'
                           }`}>

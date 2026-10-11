@@ -302,13 +302,18 @@
         "confirmDelete": "管理員確認：確定要永久刪除個案 #{{id}}？",
         "deleteTitle": "管理員刪除個案",
         "close": "關閉",
-        "location": "通報精確地點：",
+        "reporterInput": {
+            "title": "通報人填寫資料",
+            "hint": "以下內容由通報人自行填寫，未經核實",
+            "animal": "動物種類",
+            "location": "位置",
+            "description": "現場狀況"
+        },
         "reporter": "通報人：",
         "loading": "載入中...",
         "defaultReporter": "熱心市民",
         "contactProtectedTitle": "報案人聯絡資料已受保護，僅供管理員查看",
         "contactProtected": "通報人聯絡資料已受保護（僅供救援協調團隊查看）",
-        "description": "市民狀況說明：",
         "statusTitle": "救援進度狀態（即時同步）：",
         "adminCanChange": "管理員可任意變更",
         "adminOnly": "（僅管理員可變更狀態）",
@@ -456,6 +461,9 @@
         "reportedAt": "通報時間：{{time}}",
         "viewDetails": "查看詳情",
         "newReport": "新增通報"
+    },
+    "adminDashboard": {
+        "viewDetails": "查看個案詳情"
     }
 
 }

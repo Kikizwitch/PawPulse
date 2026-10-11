@@ -302,13 +302,18 @@
     "confirmDelete": "Admin confirmation: permanently delete case #{{id}}?",
     "deleteTitle": "Delete case (admin)",
     "close": "Close",
-    "location": "Reported location:",
+    "reporterInput": {
+      "title": "Submitted by reporter",
+      "hint": "Entered by the reporter and not verified",
+      "animal": "Animal",
+      "location": "Location",
+      "description": "On-site situation"
+    },
     "reporter": "Reporter: ",
     "loading": "Loading...",
     "defaultReporter": "Concerned citizen",
     "contactProtectedTitle": "Reporter contact details are protected and visible to admins only",
     "contactProtected": "Reporter contact details are protected (visible to the rescue coordination team only)",
-    "description": "Reporter's description:",
     "statusTitle": "Rescue status (live sync):",
     "adminCanChange": "Admins can change this",
     "adminOnly": "(only admins can change the status)",
@@ -456,5 +461,8 @@
     "reportedAt": "Reported: {{time}}",
     "viewDetails": "View details",
     "newReport": "New report"
+  },
+  "adminDashboard": {
+    "viewDetails": "View case details"
   }
 }

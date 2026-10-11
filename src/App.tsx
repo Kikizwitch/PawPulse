@@ -404,11 +404,10 @@ function AppContent() {
                 {currentTab !== 'report' && currentTab !== 'admin' && currentTab !== 'mycases' && (
                   <button
                     onClick={() => setCurrentTab('report')}
-                    aria-label={t('app.newReport')}
-                    className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1 sm:gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg bg-red-600 text-white text-xs font-semibold whitespace-nowrap hover:bg-red-700 transition-colors cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
-                    <span className="hidden sm:inline">{t('app.newReport')}</span>
+                    <span>{t('app.newReport')}</span>
                   </button>
                 )}
               </div>
@@ -545,6 +544,7 @@ function AppContent() {
               <AdminDashboard
                 reports={reports}
                 ngos={ngos}
+                onSelectReport={(report) => setSelectedReportForModal(report)}
                 onUpdateCaseStatus={handleUpdateStatus}
                 onDeleteCase={handleDeleteCase}
                 onUpdateNGOCapacity={handleUpdateNGOCapacity}
