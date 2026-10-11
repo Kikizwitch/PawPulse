@@ -408,7 +408,9 @@
     "navigate": "Navigate in Google Maps",
     "photoAlt": "Case photo",
     "viewFull": "View full assessment & matches",
-    "close": "Close"
+    "close": "Close",
+    "casesHere": "{{n}} cases at this location",
+    "backToList": "Back to cases at this location"
   },
   "ngoDir": {
     "badge": "PawPulse partner NGO database (live sync)",
