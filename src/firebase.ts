@@ -49,3 +49,36 @@ export interface FirestoreErrorInfo {
     }[];
   };
 }
+
+/**
+ * Standardized Firestore error logger.
+ *
+ * ⚠️ 已修正私隱洩漏問題：完整結構化資訊（含 email／uid）只會寫入
+ * console.error（畀開發者喺伺服器端 log 睇），但拋出畀呼叫方嗰個
+ * Error 只帶簡短、唔含 PII 嘅訊息，避免呢啲個人資訊經由 UI 顯示
+ * 或者第三方監控工具（例如 Sentry）意外外洩。
+ */
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): never {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData?.map((provider) => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || [],
+    },
+    operationType,
+    path,
+  };
+
+  // 完整資訊只留喺伺服器端／開發者 console，唔會外洩
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+
+  // 拋出畀呼叫方嗰個 Error 唔含任何 PII
+  throw new Error(`Firestore ${operationType} failed at ${path ?? 'unknown path'}`);
+}
