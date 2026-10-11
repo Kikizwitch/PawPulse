@@ -544,6 +544,7 @@ function AppContent() {
               <AdminDashboard
                 reports={reports}
                 ngos={ngos}
+                onSelectReport={(report) => setSelectedReportForModal(report)}
                 onUpdateCaseStatus={handleUpdateStatus}
                 onDeleteCase={handleDeleteCase}
                 onUpdateNGOCapacity={handleUpdateNGOCapacity}

@@ -6,12 +6,13 @@ import { NGOMatchFeedback } from './NGOMatchFeedback';
 import { getGoogleMapsDirectionsUrl } from '../utils/location';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchCaseContact, ReporterContactInfo, rankFirestoreNGOs } from '../services/caseService';
-import { statusLabel, CASE_STATUSES } from '../utils/caseLabels';
+import { statusLabel, animalLabel, CASE_STATUSES } from '../utils/caseLabels';
 import { getApiLang } from '../i18n';
 import {
   X, MapPin, Phone, User, Clock, Navigation, Mail, Copy, Check, ShieldCheck, Trash2, Lock,
-  Building2, Handshake, Loader2,
+  Building2, Handshake, Loader2, ClipboardList,
 } from 'lucide-react';
+import { AnimalIcon } from './AnimalIcons';
 import { PhotoGallery } from './PhotoGallery';
 import { getCasePhotos } from '../utils/casePhotos';
 import { NGO_STATUSES } from './NgoWorkspace';
@@ -189,13 +190,35 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
             </div>
 
             <div className="md:col-span-7 space-y-3">
-              <div className="bg-stone-50 rounded-2xl p-4 border border-stone-200/80 space-y-2.5 text-xs text-stone-700">
+              {/* 通報人手動填寫嘅三項資料（動物種類、位置、現場狀況），同下面 AI 分析分開，避免混淆 */}
+              <div className="bg-stone-50 rounded-2xl p-4 border border-stone-200/80 space-y-3 text-xs text-stone-700">
+                <div className="pb-2.5 border-b border-stone-200/60">
+                  <span className="font-bold text-sm text-stone-900 flex items-center gap-1.5">
+                    <ClipboardList className="w-4 h-4 text-stone-500" />
+                    {t('caseModal.reporterInput.title')}
+                  </span>
+                  <p className="text-2xs text-stone-500 mt-0.5">{t('caseModal.reporterInput.hint')}</p>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <AnimalIcon type={report.animalType} active className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-stone-900 block">{t('caseModal.reporterInput.animal')}</span>
+                    <span>{animalLabel(report.animalType, report.customAnimalName)}</span>
+                  </div>
+                </div>
+
                 <div className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-stone-900 block">{t('caseModal.location')}</span>
+                    <span className="font-bold text-stone-900 block">{t('caseModal.reporterInput.location')}</span>
                     <span>{report.location.address}</span>
                   </div>
+                </div>
+
+                <div>
+                  <span className="font-bold text-stone-900 block mb-1">{t('caseModal.reporterInput.description')}</span>
+                  <p className="text-stone-600 leading-relaxed bg-white p-2.5 rounded-xl border border-stone-200/60 whitespace-pre-line">{report.description}</p>
                 </div>
 
                 <div className="flex items-center gap-4 flex-wrap pt-2 border-t border-stone-200/60 text-2xs">
@@ -238,11 +261,6 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
                     <Clock className="w-3.5 h-3.5 text-stone-400" />
                     <span>{formatDateTime(report.createdAt)}</span>
                   </div>
-                </div>
-
-                <div className="pt-2 border-t border-stone-200/60">
-                  <span className="font-bold text-stone-900 block mb-1">{t('caseModal.description')}</span>
-                  <p className="text-stone-600 leading-relaxed bg-white p-2.5 rounded-xl border border-stone-200/60">{report.description}</p>
                 </div>
               </div>
 
