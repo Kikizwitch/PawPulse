@@ -28,6 +28,7 @@ npm run dev     # tsx server.ts：Express + Vite middleware，http://localhost:3
 npm run lint    # tsc --noEmit（唯一嘅檢查，暫時冇測試）
 npm run build   # vite build → dist/；esbuild server.ts → server-dist/server.cjs
 npm run start   # node server-dist/server.cjs（要 NODE_ENV=production 先會 serve dist/）
+npx firebase-tools deploy --only firestore:rules   # 部署 Firestore rules（firebase.json 已指定非 default database）
 ```
 
 - 本機用 Firebase Admin SDK 前要先 `gcloud auth application-default login`。
@@ -115,7 +116,7 @@ security_spec.md           # 威脅模型（Dirty Dozen payloads）
 - **NGO 派送**（`/api/ngo/notify`）目前只係 `console.log` 模擬（`simulated: true`），有 `TODO` 標記。
 - 未設定 `GMAIL_*` 時，全部電郵只會印喺 terminal（**包括設定密碼連結，production 一定要設定**）。
 - `GET /api/ngos` 回傳空陣列；前端直接由 Firestore 讀 NGO。
-- 冇自動化測試；Repo 冇 `firebase.json`，rules 要喺 Firebase Console 手動 Publish（揀 `ai-studio-pawpules-...` 資料庫）。
+- 冇自動化測試。Rules 用 `npx firebase-tools deploy --only firestore:rules`（或 `--only storage`）部署，部署前可以加 `--dry-run` 檢查語法。
 - dev 同 PRD 共用同一個 Firestore 同 Storage，Publish rules 會即刻影響 PRD。
 
 ## 環境變數（Cloud Run）

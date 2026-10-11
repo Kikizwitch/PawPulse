@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StrayReport, NGOOrganization, UrgencyLevel } from '../types';
+import { StrayReport, NGOOrganization, UrgencyLevel, CaseTag } from '../types';
 import { getGoogleMapsDirectionsUrl } from '../utils/location';
-import { ANIMAL_FILTERS, AnimalFilter, matchesAnimalFilter, animalFilterLabel } from '../utils/caseLabels';
+import {
+  ANIMAL_FILTERS, AnimalFilter, matchesAnimalFilter, animalFilterLabel, CASE_TAGS, tagLabel, matchesTagFilter,
+} from '../utils/caseLabels';
 import L from 'leaflet';
 import { ExternalLink, Sparkles, X } from 'lucide-react';
 import { AnimalIcon, animalIconSvg } from './AnimalIcons';
@@ -41,6 +43,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
 
   const [filterAnimal, setFilterAnimal] = useState<AnimalFilter>('all');
   const [filterUrgency, setFilterUrgency] = useState<'all' | UrgencyLevel>('all');
+  const [filterTags, setFilterTags] = useState<CaseTag[]>([]);
   const [showNGOs, setShowNGOs] = useState(true);
   const [activeReport, setActiveReport] = useState<StrayReport | null>(null);
 
@@ -98,6 +101,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
     const filteredReports = reports.filter((r) => {
       if (!matchesAnimalFilter(r.animalType, filterAnimal)) return false;
       if (filterUrgency !== 'all' && r.urgency !== filterUrgency) return false;
+      if (!matchesTagFilter(r.tags, filterTags)) return false;
       return true;
     });
 
@@ -187,7 +191,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
       });
     }
     // t 喺依賴入面：轉語言時重新畫 popup
-  }, [reports, ngos, filterAnimal, filterUrgency, showNGOs, onSelectReport, t]);
+  }, [reports, ngos, filterAnimal, filterUrgency, filterTags, showNGOs, onSelectReport, t]);
 
   // aiAnalysis.apparentInjuries 冇被 rules 驗證結構，非陣列直接 [0] 會拖垮地圖
   const safeActiveInjuries = Array.isArray(activeReport?.aiAnalysis?.apparentInjuries)
@@ -252,6 +256,30 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
               {t('map.showNgos')}
             </span>
           </label>
+        </div>
+
+        {/* 標籤篩選另起一行（basis-full），可以揀多個，要全部符合先顯示 */}
+        <div className="basis-full flex">
+          <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-white/95 backdrop-blur border border-stone-200 shadow-md pointer-events-auto flex-wrap">
+            <span className="px-1.5 text-2xs font-semibold text-stone-400">{t('map.tagFilter')}</span>
+            {CASE_TAGS.map((tag) => {
+              const active = filterTags.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  onClick={() =>
+                    setFilterTags((prev) => (prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag]))
+                  }
+                  aria-pressed={active}
+                  className={`px-2 py-1 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
+                    active ? 'bg-brand-500 text-white' : 'text-stone-700 hover:bg-stone-100'
+                  }`}
+                >
+                  #{tagLabel(tag)}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

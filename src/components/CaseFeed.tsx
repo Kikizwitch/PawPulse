@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StrayReport, UrgencyLevel, CaseStatus } from '../types';
-import { statusLabel, animalLabel, ANIMAL_FILTERS, AnimalFilter, matchesAnimalFilter, animalFilterLabel } from '../utils/caseLabels';
+import { StrayReport, UrgencyLevel, CaseStatus, CaseTag } from '../types';
+import {
+  statusLabel, animalLabel, ANIMAL_FILTERS, AnimalFilter, matchesAnimalFilter, animalFilterLabel,
+  CASE_TAGS, tagLabel, matchesTagFilter,
+} from '../utils/caseLabels';
 import { getApiLang } from '../i18n';
 import { Search, Sparkles, MapPin, Clock, ShieldAlert, ChevronRight } from 'lucide-react';
 import { AnimalIcon } from './AnimalIcons';
@@ -40,11 +43,16 @@ export const CaseFeed: React.FC<CaseFeedProps> = ({ reports, onSelectReport, onN
   const [selectedAnimal, setSelectedAnimal] = useState<AnimalFilter>('all');
   const [selectedUrgency, setSelectedUrgency] = useState<'all' | UrgencyLevel>('all');
   const [selectedStatus, setSelectedStatus] = useState<'all' | CaseStatus>('all');
+  const [selectedTags, setSelectedTags] = useState<CaseTag[]>([]);
+
+  const toggleTag = (tag: CaseTag) =>
+    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag]));
 
   const filteredReports = reports.filter((report) => {
     if (!matchesAnimalFilter(report.animalType, selectedAnimal)) return false;
     if (selectedUrgency !== 'all' && report.urgency !== selectedUrgency) return false;
     if (selectedStatus !== 'all' && report.status !== selectedStatus) return false;
+    if (!matchesTagFilter(report.tags, selectedTags)) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchTitle = report.title.toLowerCase().includes(q);
@@ -121,6 +129,34 @@ export const CaseFeed: React.FC<CaseFeedProps> = ({ reports, onSelectReport, onN
               </button>
             ))}
           </div>
+        </div>
+
+        {/* 標籤可以揀多個，要全部符合先顯示 */}
+        <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-stone-100 text-xs text-stone-600">
+          <span className="text-[11px] font-semibold text-stone-400">{t('caseFeed.tagFilter')}</span>
+          <button
+            onClick={() => setSelectedTags([])}
+            className={`px-2 py-0.5 rounded-md font-medium transition-colors ${
+              selectedTags.length === 0 ? 'bg-stone-900 text-white font-bold' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+            }`}
+          >
+            {t('caseFeed.all')}
+          </button>
+          {CASE_TAGS.map((tag) => {
+            const active = selectedTags.includes(tag);
+            return (
+              <button
+                key={tag}
+                onClick={() => toggleTag(tag)}
+                aria-pressed={active}
+                className={`px-2 py-0.5 rounded-md font-medium transition-colors ${
+                  active ? 'bg-brand-500 text-white font-bold' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                #{tagLabel(tag)}
+              </button>
+            );
+          })}
         </div>
       </div>
 

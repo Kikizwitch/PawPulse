@@ -6,6 +6,7 @@ import { db, handleFirestoreError, OperationType } from '../firebase';
 import { StrayReport, CaseStatus, NGOOrganization, AnimalType, UrgencyLevel, NgoAccount, CaseAcceptance } from '../types';
 import { calculateDistanceKm } from '../utils/location';
 import { monitoring } from '../utils/monitoring';
+import { isCaseTag } from '../utils/caseLabels';
 import { apiFetch } from './api';
 
 export const CASE_COLLECTION = 'case';
@@ -36,6 +37,7 @@ export function docToReport(id: string, data: DocumentData): StrayReport | null 
     title: data.title || `#${id.slice(0, 6)}`,
     animalType: data.animalType || 'other',
     customAnimalName: data.customAnimalName || undefined,
+    tags: Array.isArray(data.tags) ? data.tags.filter(isCaseTag) : [],
     photoUrl: data.photoUrl || '',
     storagePath: data.storagePath || '',
     photos: Array.isArray(data.photos)
@@ -111,6 +113,8 @@ export async function createCaseInFirestore(report: StrayReport): Promise<void> 
       title: report.title,
       animalType: report.animalType,
       customAnimalName: report.customAnimalName || '',
+      // 冇揀標籤就唔寫呢個欄位（舊案件亦冇）
+      ...(report.tags?.length ? { tags: report.tags } : {}),
       photoUrl: report.photoUrl,
       storagePath: report.storagePath || '',
       photos: report.photos.map(({ url, path }) => ({ url, path })),

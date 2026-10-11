@@ -94,7 +94,7 @@ service cloud.firestore {
     function isValidCase(caseId, data) {
       return data.keys().hasAll(['id', 'title', 'animalType', 'photoUrl', 'location',
                                  'description', 'status', 'urgency', 'createdAt', 'storagePath', 'photos'])
-        && data.keys().hasOnly(['id', 'title', 'animalType', 'customAnimalName', 'photoUrl',
+        && data.keys().hasOnly(['id', 'title', 'animalType', 'customAnimalName', 'tags', 'photoUrl',
                                 'storagePath', 'photos', 'location', 'description', 'createdAt', 'updatedAt',
                                 'status', 'urgency', 'geminiResponse', 'aiAnalysis',
                                 'matchedNGOs', 'dispatchedToNGO'])
@@ -103,6 +103,8 @@ service cloud.firestore {
         && data.title is string && data.title.size() > 0 && data.title.size() <= 200
         && data.animalType in ['cat', 'dog', 'bird', 'other']
         && optStr(data, 'customAnimalName', 100)
+        && (!('tags' in data) || (data.tags is list && data.tags.size() <= 5
+            && data.tags.hasOnly(['stray', 'injured', 'trapped', 'juvenile', 'adult'])))
         && data.photoUrl is string && data.photoUrl.size() > 0 && data.photoUrl.size() <= 2048
         && optStr(data, 'storagePath', 256)
         && isValidPhotos(caseId, data)

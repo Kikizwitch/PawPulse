@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
-import { AnimalType, LocationCoords, StrayReport, NGOOrganization, CasePhoto } from '../types';
+import { AnimalType, CaseTag, LocationCoords, StrayReport, NGOOrganization, CasePhoto } from '../types';
 import { PRESET_LOCATIONS, geocodeAddressQuery, reverseGeocodeCoords } from '../utils/location';
 import AddressAutocomplete from './AddressAutocomplete';
 import { CatIcon, DogIcon, BirdIcon } from './AnimalIcons';
@@ -8,7 +8,7 @@ import type { ResolvedAddress } from '../services/places';
 import { compressImage, uploadCasePhotos, PhotoError } from '../utils/imageCompressor';
 import { MAX_CASE_PHOTOS } from '../utils/casePhotos';
 import { rankFirestoreNGOs } from '../services/caseService';
-import { animalLabel } from '../utils/caseLabels';
+import { animalLabel, CASE_TAGS, tagLabel, applyTagLine, stripTagLine } from '../utils/caseLabels';
 import { useAuth } from '../contexts/AuthContext';
 import {
   Camera,
@@ -88,6 +88,14 @@ export const ReportForm: React.FC<ReportFormProps> = ({ ngos, onSubmitReport, on
   const [photos, setPhotos] = useState<PendingPhoto[]>([]);
   const [isProcessingPhotos, setIsProcessingPhotos] = useState(false);
   const [description, setDescription] = useState('');
+  const [tags, setTags] = useState<CaseTag[]>([]);
+
+  // 揀／取消標籤時，同步更新「現場狀況」第一行嘅標籤文字
+  const toggleTag = (tag: CaseTag) => {
+    const next = tags.includes(tag) ? tags.filter((x) => x !== tag) : [...tags, tag];
+    setTags(next);
+    setDescription((prev) => applyTagLine(prev, next));
+  };
 
   // Reporter details & Anti-abuse
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -277,7 +285,8 @@ export const ReportForm: React.FC<ReportFormProps> = ({ ngos, onSubmitReport, on
       return;
     }
 
-    if (!description.trim()) {
+    // 只得標籤行唔算填咗現場狀況
+    if (!stripTagLine(description).trim()) {
       alert(t('reportForm.errors.noDescription'));
       return;
     }
@@ -342,12 +351,14 @@ export const ReportForm: React.FC<ReportFormProps> = ({ ngos, onSubmitReport, on
         }),
         animalType,
         customAnimalName: customAnimalName.trim() || undefined,
+        tags: tags.length ? CASE_TAGS.filter((tag) => tags.includes(tag)) : undefined,
         // 封面 = 第 1 張；firestore.rules 會核對 photoUrl / storagePath 等於 photos[0]
         photoUrl: casePhotos[0].url,
         storagePath: casePhotos[0].path,
         photos: casePhotos,
         location,
-        description: description.trim(),
+        // 送出前用目前語言重砌標籤行，確保第一行同揀咗嘅標籤一致
+        description: applyTagLine(description, tags).trim(),
         reporterName: effectiveReporterName,
         reporterPhone: effectiveReporterPhone,
         reporterEmail: effectiveReporterEmail || undefined,
@@ -405,8 +416,8 @@ export const ReportForm: React.FC<ReportFormProps> = ({ ngos, onSubmitReport, on
     {
       id: 'description',
       label: t('reportForm.checklist.description'),
-      value: description.trim() ? t('reportForm.checklist.filled') : t('reportForm.checklist.notFilled'),
-      done: !!description.trim(),
+      value: stripTagLine(description).trim() ? t('reportForm.checklist.filled') : t('reportForm.checklist.notFilled'),
+      done: !!stripTagLine(description).trim(),
     },
     {
       id: 'email',
@@ -659,6 +670,29 @@ export const ReportForm: React.FC<ReportFormProps> = ({ ngos, onSubmitReport, on
             hint={t('reportForm.description.hint')}
             aside={<RequiredTag />}
           >
+            <div className="mb-3">
+              <p className="text-xs text-stone-500 mb-1.5">{t('reportForm.description.tagsLabel')}</p>
+              <div className="flex flex-wrap gap-2">
+                {CASE_TAGS.map((tag) => {
+                  const selected = tags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleTag(tag)}
+                      aria-pressed={selected}
+                      className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-colors cursor-pointer ${
+                        selected
+                          ? 'border-brand-500 bg-brand-50 text-brand-900 ring-1 ring-brand-500'
+                          : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:bg-stone-50'
+                      }`}
+                    >
+                      #{tagLabel(tag)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <textarea
               rows={4}
               value={description}
