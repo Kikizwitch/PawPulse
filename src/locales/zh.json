@@ -408,7 +408,9 @@
         "navigate": "在 Google 地圖導航",
         "photoAlt": "個案照片",
         "viewFull": "檢視完整診斷及媒合",
-        "close": "關閉"
+        "close": "關閉",
+        "casesHere": "此地點共有 {{n}} 宗個案",
+        "backToList": "返回此地點個案列表"
     },
     "ngoDir": {
         "badge": "PawPulse 合作 NGO 救助資料庫（即時同步）",
