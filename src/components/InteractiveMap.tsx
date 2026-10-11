@@ -9,6 +9,7 @@ import {
 import L from 'leaflet';
 import { ChevronLeft, ChevronRight, ExternalLink, Sparkles, X } from 'lucide-react';
 import { AnimalIcon, animalIconSvg } from './AnimalIcons';
+import { careIconSvg } from './BrandIcons';
 
 interface InteractiveMapProps {
   reports: StrayReport[];
@@ -187,13 +188,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
           className: 'custom-ngo-pin',
           html: `
             <div style="
-              width: 32px; height: 32px; background: #0284c7; border: 2px solid white;
-              border-radius: 8px; display: flex; align-items: center; justify-content: center;
-              color: white; box-shadow: 0 3px 8px rgba(0,0,0,0.25); font-size: 14px; cursor: pointer;
-            ">🏥</div>
+              width: 34px; height: 34px; background: white; border: 2px solid #0284c7;
+              border-radius: 50%; display: flex; align-items: center; justify-content: center;
+              box-shadow: 0 3px 8px rgba(0,0,0,0.25); cursor: pointer;
+            ">${careIconSvg(26)}</div>
           `,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16],
+          iconSize: [34, 34],
+          iconAnchor: [17, 17],
         });
 
         const ngoMarker = L.marker([ngo.lat, ngo.lng], { icon: ngoIcon });
