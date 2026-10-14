@@ -24,6 +24,14 @@ service cloud.firestore {
       allow write: if false;                                 // 只可以經 server 寫
     }
 
+    // 會員資料（5A）：姓名唔公開，只有本人同 admin 讀得到；只可以經 server 寫
+    match /userprofiles/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if false;
+    }
+    // usernames/{帳戶名}：只供 server 檢查重複，由最尾嘅 deny all 擋住，唔使另外寫
+
+
 
     // 登入者所屬機構 ID（一定要先確認 isNgo() 先好 call）
     function myNgoId() {
@@ -124,17 +132,23 @@ service cloud.firestore {
     // 報案人聯絡資料：createdByUid 必須等於真正登入者，唔可以冒認
     function isValidContact(data) {
       return data.keys().hasAll(['reporterName', 'reporterPhone', 'reporterEmail', 'createdByUid', 'createdAt'])
-        && data.keys().hasOnly(['reporterName', 'reporterPhone', 'reporterEmail', 'createdByUid', 'createdAt'])
+        && data.keys().hasOnly(['reporterName', 'reporterPhone', 'reporterEmail', 'createdByUid', 'createdAt', 'accountEmail', 'lang'])
         && data.reporterName is string && data.reporterName.size() <= 100
         && data.reporterPhone is string && data.reporterPhone.size() <= 50
         && data.reporterEmail is string && data.reporterEmail.size() <= 200
         && data.createdAt == request.time
         && ((request.auth == null && data.createdByUid == 'anonymous')
-            || (request.auth != null && data.createdByUid == request.auth.uid));
+            || (request.auth != null && data.createdByUid == request.auth.uid))
+        && (!('accountEmail' in data)
+            || (request.auth != null && data.accountEmail == request.auth.token.get('email', '')))
+        && (!('lang' in data) || (data.lang is string && data.lang.size() <= 10));
     }
 
     match /case/{caseId} {
-      allow read: if true;
+      // 「待刪除」案件只有 admin 同 NGO 睇到
+      allow read: if resource == null
+                  || resource.data.status in ['pending', 'in_progress', 'rescued', 'closed']
+                  || isAdmin() || isNgo();
       // 必須同 private/contact 喺同一個 batch 一齊建立
       allow create: if isValidCase(caseId, request.resource.data)
         && existsAfter(/databases/$(database)/documents/case/$(caseId)/private/contact);
@@ -150,6 +164,14 @@ service cloud.firestore {
           && existsAfter(/databases/$(database)/documents/case/$(caseId))
           && isValidContact(request.resource.data);
         allow update, delete: if isAdmin();
+      }
+
+      // 5D 留言：睇到案件就睇到留言（待刪除案件只限 admin / NGO）；只可以經 server 寫
+      match /comments/{commentId} {
+        allow read: if get(/databases/$(database)/documents/case/$(caseId)).data.status
+                         in ['pending', 'in_progress', 'rescued', 'closed']
+                    || isAdmin() || isNgo();
+        allow write: if false;
       }
     }
 
