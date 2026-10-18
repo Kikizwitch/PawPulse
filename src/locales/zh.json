@@ -624,7 +624,140 @@
         "newComments": "{{count}} 則新留言"
     },
     "adminDashboard": {
-        "viewDetails": "查看個案詳情"
+        "viewDetails": "查看個案詳情",
+        "badge": "Super Admin",
+        "headerTitle": "PawPulse 管理員與救助隊調度後台",
+        "headerSubtitle": "直接維護 Firestore 雲端資料庫（個案審核、NGO 機構註冊、日誌監控）。",
+        "signOut": "登出",
+        "tabs": {
+            "cases": "個案資料表審核（{{n}}）",
+            "ngos": "NGO 機構資料表維護（{{n}}）",
+            "logs": "系統日誌與監控"
+        },
+        "cases": {
+            "tableTitle": "Firestore `case` 資料表（即時同步）",
+            "tableMeta": "Collection: case／共 {{n}} 宗",
+            "emptyTitle": "目前雲端資料庫中沒有任何通報個案",
+            "emptyBody": "市民透過「我要通報」送出後，資料將自動存入 Firestore 並即時顯示於此。",
+            "reporter": "通報人：{{name}}（{{phone}}）",
+            "notProvided": "未提供",
+            "noPhone": "無電話",
+            "contactFailed": "⚠ 未能讀取聯絡資料（資料不存在或讀取被拒）",
+            "loading": "載入中…",
+            "revealContact": "查看報案人聯絡資料",
+            "location": "地點：{{address}}",
+            "deleteTitle": "刪除個案",
+            "confirmDelete": "確認從 Firestore 永久刪除個案 #{{id}}？"
+        },
+        "status": {
+            "pending": "待處理",
+            "in_progress": "救援前往中",
+            "rescued": "已成功救助",
+            "closed": "已結案"
+        },
+        "animals": {
+            "cat": "貓",
+            "dog": "狗",
+            "bird": "雀鳥",
+            "other": "其他"
+        },
+        "listSeparator": "、",
+        "ngos": {
+            "title": "Firestore 合作 NGO 救助機構名冊",
+            "subtitle": "機構資料公開顯示；登入帳戶只有管理員可見",
+            "add": "新增 NGO 機構",
+            "emptyTitle": "Firestore 資料庫中尚未登記任何 NGO 機構",
+            "emptyBody": "按上方「新增 NGO 機構」，將合作組織登記至 Firestore 雲端資料庫。",
+            "deleteTitle": "刪除機構",
+            "confirmDelete": "確認從 Firestore 刪除 NGO「{{name}}」？",
+            "confirmDeleteAccounts": "其 {{n}} 個登入帳戶將一併移除並立即登出。",
+            "address": "{{address}}（{{district}}）",
+            "hotline": "熱線：{{hotline}}",
+            "whatsapp": "／WhatsApp：{{whatsapp}}",
+            "hours": "服務時間：{{hours}}",
+            "accepts": "接受：{{animals}}",
+            "notSet": "未設定",
+            "capacityLabel": "調整接案狀態：",
+            "capacity": {
+                "available": "正常接案",
+                "busy": "救援繁重",
+                "full": "暫停收案"
+            },
+            "capacityButton": {
+                "available": "正常接案",
+                "busy": "繁重",
+                "full": "暫停收案"
+            }
+        },
+        "accounts": {
+            "title": "登入帳戶（不公開，{{n}} 個）",
+            "empty": "尚未有帳戶，此機構暫時無法登入。",
+            "removeTitle": "移除帳戶",
+            "addPlaceholder": "新增職員登入電郵",
+            "add": "新增帳戶",
+            "processing": "處理中…",
+            "confirmRemove": "確認移除登入帳戶「{{email}}」？該帳戶會立即登出，並變回普通用戶。",
+            "removeFailed": "移除失敗：{{error}}",
+            "failedHeader": "以下登入帳戶建立失敗：",
+            "failedItem": "{{email}}：{{error}}",
+            "simulated": "未設定 Gmail（模擬寄信模式），設定密碼連結已輸出至 F12 Console。",
+            "invalidEmail": "登入電郵格式不正確",
+            "invalidEmailWith": "登入電郵格式不正確：{{email}}"
+        },
+        "logs": {
+            "title": "即時系統日誌（Structured Logs）",
+            "refresh": "重新整理",
+            "empty": "暫無日誌記錄"
+        },
+        "form": {
+            "title": "新增合作 NGO 機構",
+            "sectionBasic": "基本資料",
+            "name": "機構中文全名 *",
+            "namePlaceholder": "例如：XX 動物救援協會",
+            "englishName": "機構英文名稱",
+            "englishNamePlaceholder": "例如：XX Animal Rescue",
+            "sectionContact": "公開聯絡資料（市民及報案人可見）",
+            "hotline": "急救熱線 *",
+            "hotlinePlaceholder": "例如 +852 2711 1000",
+            "whatsapp": "WhatsApp（連國家區號）",
+            "whatsappPlaceholder": "例如 85291234567",
+            "publicEmail": "公開電郵",
+            "publicEmailPlaceholder": "例如 info@example.org",
+            "website": "網站",
+            "sectionLocation": "地點",
+            "address": "機構地址／救助中心 *",
+            "addressPlaceholder": "輸入機構地址，選擇建議地址後會自動填入經緯度",
+            "addressHint": "選擇建議地址後，下方的分區及經緯度會自動填入。",
+            "district": "分區",
+            "districtPlaceholder": "例如：油尖旺區",
+            "lat": "緯度（Lat）",
+            "lng": "經度（Lng）",
+            "autoFill": "自動填寫",
+            "sectionService": "服務",
+            "acceptedAnimals": "接受救助的動物類型",
+            "specialties": "專長項目（以逗號分隔）",
+            "specialtiesPlaceholder": "24 小時緊急出車, 唐狗急救, 誘捕籠",
+            "hours": "服務時間",
+            "hoursPlaceholder": "例如：每日 09:00–21:00",
+            "emergency24h": "具備 24 小時緊急救援車及夜間值勤",
+            "sectionAccounts": "登入帳戶（不公開）",
+            "accountsHint": "每個電郵會收到「設定密碼連結」，設定後即可登入 NGO 工作台接手案件。可以留空，之後在機構卡片再新增。",
+            "loginEmailPlaceholder": "職員登入電郵",
+            "remove": "移除",
+            "addAccountRow": "新增帳戶（最多 {{max}} 個）",
+            "cancel": "取消",
+            "saving": "儲存中…",
+            "save": "儲存機構及建立帳戶",
+            "defaultHours": "24 小時急救出勤",
+            "defaultSpecialties": "流浪貓狗急救, 骨折外傷, 誘捕安置",
+            "districtPending": "待確認地區"
+        },
+        "errors": {
+            "required": "請填寫機構名稱及急救熱線",
+            "location": "請在地址欄選擇建議地址，或手動填寫正確的經緯度",
+            "publicEmail": "公開電郵格式不正確",
+            "website": "網站須以 https:// 或 http:// 開頭"
+        }
     },
     "member": {
         "lastName": "姓",

@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { StrayReport, NGOOrganization, CaseStatus, AnimalType, NGOCapacityStatus, NgoAccount } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -29,11 +28,12 @@ import {
 } from '../services/caseService';
 import AddressAutocomplete from './AddressAutocomplete';
 import { isCoverSensitive } from '../utils/sensitivePhotos';
+import { getApiLang, getAppLang } from '../i18n';
 
 interface AdminDashboardProps {
   reports: StrayReport[];
   ngos: NGOOrganization[];
-  onSelectReport: (report: StrayReport) => void; // 撳標題開個案詳情 pop up
+  onSelectReport: (report: StrayReport) => void; // 按標題開啟個案詳情
   onUpdateCaseStatus: (caseId: string, status: CaseStatus) => void;
   onDeleteCase: (caseId: string) => void;
   onUpdateNGOCapacity: (ngoId: string, capacity: NGOCapacityStatus) => void;
@@ -41,24 +41,32 @@ interface AdminDashboardProps {
   onDeleteNGO: (ngoId: string) => void;
 }
 
-const ANIMAL_TYPE_OPTIONS: { value: AnimalType; label: string }[] = [
-  { value: 'cat', label: '貓' },
-  { value: 'dog', label: '狗' },
-  { value: 'bird', label: '雀鳥' },
-  { value: 'other', label: '其他' },
-];
+const ANIMAL_TYPES: AnimalType[] = ['cat', 'dog', 'bird', 'other'];
+const CASE_STATUS_OPTIONS: CaseStatus[] = ['pending', 'in_progress', 'rescued', 'closed'];
+const CAPACITY_OPTIONS: NGOCapacityStatus[] = ['available', 'busy', 'full'];
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_LOGIN_EMAILS = 5;
 const INPUT_CLS =
   'w-full p-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500';
 
-// 網站連結只准 http(s)，防止 javascript: 之類嘅連結
+// 網站連結只接受 http(s)，防止 javascript: 之類的連結
 const safeWebsite = (url?: string) => (url && /^https?:\/\//i.test(url) ? url : null);
 
 const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <p className="text-2xs font-bold uppercase tracking-wider text-stone-400 pt-2">{children}</p>
 );
+
+const CAPACITY_BADGE: Record<string, string> = {
+  available: 'bg-emerald-100 text-emerald-800',
+  busy: 'bg-amber-100 text-amber-800',
+  full: 'bg-rose-100 text-rose-800',
+};
+const CAPACITY_ACTIVE: Record<string, string> = {
+  available: 'bg-emerald-600 text-white',
+  busy: 'bg-amber-600 text-white',
+  full: 'bg-rose-600 text-white',
+};
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   reports,
@@ -88,12 +96,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newNGODistrict, setNewNGODistrict] = useState('');
   const [newNGOLat, setNewNGOLat] = useState('');
   const [newNGOLng, setNewNGOLng] = useState('');
-  const [newNGOOperatingHours, setNewNGOOperatingHours] = useState('24 小時急救出勤');
+  const [newNGOOperatingHours, setNewNGOOperatingHours] = useState(() => t('adminDashboard.form.defaultHours'));
   const [newNGO24h, setNewNGO24h] = useState(true);
-  const [newNGOSpecialties, setNewNGOSpecialties] = useState('流浪貓狗急救, 骨折外傷, 誘捕安置');
+  const [newNGOSpecialties, setNewNGOSpecialties] = useState(() => t('adminDashboard.form.defaultSpecialties'));
   const [newNGOAcceptedAnimals, setNewNGOAcceptedAnimals] = useState<AnimalType[]>(['cat', 'dog']);
 
-  // 登入帳戶（唔公開）
+  // 登入帳戶（不公開）
   const [newLoginEmails, setNewLoginEmails] = useState<string[]>(['']);
   const [ngoAccounts, setNgoAccounts] = useState<NgoAccount[]>([]);
   const [addAccountInput, setAddAccountInput] = useState<Record<string, string>>({});
@@ -113,13 +121,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return map;
   }, [ngoAccounts]);
 
+  const animalName = (a: string) => t(`adminDashboard.animals.${a}`, { defaultValue: a });
+
   const handleRefreshLogs = () => {
     setLogs(monitoring.getRecentLogs());
   };
 
   const toggleAcceptedAnimal = (type: AnimalType) => {
     setNewNGOAcceptedAnimals((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+      prev.includes(type) ? prev.filter((x) => x !== type) : [...prev, type]
     );
   };
 
@@ -134,9 +144,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setNewNGODistrict('');
     setNewNGOLat('');
     setNewNGOLng('');
-    setNewNGOOperatingHours('24 小時急救出勤');
+    setNewNGOOperatingHours(t('adminDashboard.form.defaultHours'));
     setNewNGO24h(true);
-    setNewNGOSpecialties('流浪貓狗急救, 骨折外傷, 誘捕安置');
+    setNewNGOSpecialties(t('adminDashboard.form.defaultSpecialties'));
     setNewNGOAcceptedAnimals(['cat', 'dog']);
     setNewLoginEmails(['']);
   };
@@ -152,10 +162,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const failed: string[] = [];
     for (const email of emails) {
       try {
-        const r = await createNgoAccount(ngoId, email, i18n.language || 'zh');
+        const r = await createNgoAccount(ngoId, email, getAppLang());
         if (!r.emailed && r.link) links.push(`${email}\n${r.link}`);
       } catch (err: any) {
-        failed.push(`${email}：${err?.message || err}`);
+        failed.push(t('adminDashboard.accounts.failedItem', { email, error: err?.message || String(err) }));
       }
     }
     return { links, failed };
@@ -163,11 +173,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const reportAccountResults = (links: string[], failed: string[]) => {
     if (links.length > 0) {
-      console.info('[NGO 帳戶] 模擬寄信模式，設定密碼連結：\n\n' + links.join('\n\n'));
+      console.info('[NGO accounts] simulated mail mode, set-password links:\n\n' + links.join('\n\n'));
     }
     const msgs: string[] = [];
-    if (failed.length > 0) msgs.push(`以下登入帳戶建立失敗：\n${failed.join('\n')}`);
-    if (links.length > 0) msgs.push('未設定 Gmail（模擬寄信模式），設定密碼連結已印喺 F12 Console。');
+    if (failed.length > 0) msgs.push(`${t('adminDashboard.accounts.failedHeader')}\n${failed.join('\n')}`);
+    if (links.length > 0) msgs.push(t('adminDashboard.accounts.simulated'));
     if (msgs.length > 0) alert(msgs.join('\n\n'));
   };
 
@@ -176,7 +186,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (savingNGO) return;
 
     if (!newNGOName.trim() || !newNGOHotline.trim()) {
-      alert('請填寫機構名稱與急救熱線電話');
+      alert(t('adminDashboard.errors.required'));
       return;
     }
 
@@ -186,28 +196,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       !Number.isFinite(parsedLat) || parsedLat < -90 || parsedLat > 90 ||
       !Number.isFinite(parsedLng) || parsedLng < -180 || parsedLng > 180
     ) {
-      alert('請在地址欄選擇建議地址，或手動填寫正確的經緯度');
+      alert(t('adminDashboard.errors.location'));
       return;
     }
 
     const publicEmail = newNGOPublicEmail.trim();
     if (publicEmail && !EMAIL_RE.test(publicEmail)) {
-      alert('公開電郵格式不正確');
+      alert(t('adminDashboard.errors.publicEmail'));
       return;
     }
 
     const website = newNGOWebsite.trim();
     if (website && !safeWebsite(website)) {
-      alert('網站要用 https:// 或 http:// 開頭');
+      alert(t('adminDashboard.errors.website'));
       return;
     }
 
-    // 登入電郵：去空白、轉細楷、去重複
-    const loginEmails = Array.from(new Set<string>(newLoginEmails.map((s) => s.trim().toLowerCase()).filter(Boolean))
+    // 登入電郵：去空白、轉小寫、去重複
+    const loginEmails = Array.from(
+      new Set<string>(newLoginEmails.map((s) => s.trim().toLowerCase()).filter(Boolean))
     );
     const badEmail = loginEmails.find((s) => !EMAIL_RE.test(s));
     if (badEmail) {
-      alert(`登入電郵格式不正確：${badEmail}`);
+      alert(t('adminDashboard.accounts.invalidEmailWith', { email: badEmail }));
       return;
     }
 
@@ -221,12 +232,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       publicEmail: publicEmail || undefined,
       website: website || undefined,
       address: newNGOAddress.trim(),
-      district: newNGODistrict.trim() || '待確認地區',
+      district: newNGODistrict.trim() || t('adminDashboard.form.districtPending'),
       lat: parsedLat,
       lng: parsedLng,
       acceptedAnimals: newNGOAcceptedAnimals.length > 0 ? newNGOAcceptedAnimals : ['cat', 'dog', 'other'],
+      // 中英文逗號及頓號都接受
       specialties: newNGOSpecialties
-        .split(',')
+        .split(/[,，、]/)
         .map((s) => s.trim())
         .filter(Boolean),
       operatingHours: newNGOOperatingHours.trim(),
@@ -236,11 +248,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     setSavingNGO(true);
     try {
-      // 1. 先建立機構；失敗就停（App.tsx 已經提示）
+      // 1. 先建立機構；失敗就停止（App.tsx 已提示）
       const ok = await onCreateNGO(newOrg);
       if (!ok) return;
 
-      // 2. 再建立登入帳戶；失敗唔影響機構資料，之後可以喺機構卡再加
+      // 2. 再建立登入帳戶；失敗不影響機構資料，之後可在機構卡片再新增
       const { links, failed } = await createAccounts(ngoId, loginEmails);
       setShowAddNGOModal(false);
       resetNGOForm();
@@ -253,7 +265,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleAddAccount = async (ngoId: string) => {
     const email = (addAccountInput[ngoId] || '').trim().toLowerCase();
     if (!EMAIL_RE.test(email)) {
-      alert('登入電郵格式不正確');
+      alert(t('adminDashboard.accounts.invalidEmail'));
       return;
     }
     setBusyAccountKey(`add:${ngoId}`);
@@ -264,12 +276,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const handleRemoveAccount = async (account: NgoAccount) => {
-    if (!confirm(`確認移除登入帳戶「${account.email}」？佢會即刻被登出，之後變返普通用戶。`)) return;
+    if (!confirm(t('adminDashboard.accounts.confirmRemove', { email: account.email || account.uid }))) return;
     setBusyAccountKey(account.uid);
     try {
       await deleteNgoAccount(account.uid);
     } catch (err: any) {
-      alert(`移除失敗：${err?.message || err}`);
+      alert(t('adminDashboard.accounts.removeFailed', { error: err?.message || String(err) }));
     } finally {
       setBusyAccountKey(null);
     }
@@ -283,7 +295,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setNewLoginEmails((prev) => (prev.length <= 1 ? [''] : prev.filter((_, i) => i !== index)));
   };
 
-  // 用 `caseId in revealedContacts` 分辨「未讀過」同「讀完確認冇資料（null）」
+  // 用 `caseId in revealedContacts` 分辨「未讀取」與「讀取後確認沒有資料（null）」
   const handleRevealContact = async (caseId: string) => {
     if (caseId in revealedContacts) return;
     setLoadingContactId(caseId);
@@ -292,8 +304,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setLoadingContactId(null);
   };
 
-  // App.tsx 只會喺 admin 身份先顯示呢頁；呢度再擋一次
+  // App.tsx 只會在 admin 身分時顯示此頁；這裡再檢查一次
   if (!user || !isAdmin) return null;
+
+  const tabClass = (tab: typeof activeTab) =>
+    `px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer ${
+      activeTab === tab ? 'bg-stone-900 text-white shadow-xs' : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'
+    }`;
 
   return (
     <div className="space-y-6" id="admin-dashboard-view">
@@ -304,14 +321,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold tracking-tight">PawPulse 管理員與救助隊調度後台</h2>
+              <h2 className="text-lg font-bold tracking-tight">{t('adminDashboard.headerTitle')}</h2>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-500 text-stone-950">
-                Super Admin
+                {t('adminDashboard.badge')}
               </span>
             </div>
-            <p className="text-xs text-stone-400 mt-0.5">
-              直接維護 Firestore 雲端資料庫（個案審核、實體 NGO 機構註冊、日誌監控）。
-            </p>
+            <p className="text-xs text-stone-400 mt-0.5">{t('adminDashboard.headerSubtitle')}</p>
           </div>
         </div>
 
@@ -329,54 +344,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               className="px-3 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-stone-700 cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
-              登出
+              {t('adminDashboard.signOut')}
             </button>
           </div>
         </div>
       </div>
 
       <div className="flex items-center gap-2 border-b border-stone-200 pb-3 flex-wrap">
-        <button
-          onClick={() => setActiveTab('cases')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-            activeTab === 'cases' ? 'bg-stone-900 text-white shadow-xs' : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'
-          }`}
-        >
-          case 資料表審核 ({reports.length})
+        <button onClick={() => setActiveTab('cases')} className={tabClass('cases')}>
+          {t('adminDashboard.tabs.cases', { n: reports.length })}
         </button>
-        <button
-          onClick={() => setActiveTab('ngos')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-            activeTab === 'ngos' ? 'bg-stone-900 text-white shadow-xs' : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'
-          }`}
-        >
-          ngodatail 資料表維護 ({ngos.length})
+        <button onClick={() => setActiveTab('ngos')} className={tabClass('ngos')}>
+          {t('adminDashboard.tabs.ngos', { n: ngos.length })}
         </button>
         <button
           onClick={() => {
             setActiveTab('logs');
             handleRefreshLogs();
           }}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer ${
-            activeTab === 'logs' ? 'bg-stone-900 text-white shadow-xs' : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'
-          }`}
+          className={tabClass('logs')}
         >
           <Terminal className="w-3.5 h-3.5" />
-          系統日誌與監控
+          {t('adminDashboard.tabs.logs')}
         </button>
       </div>
 
       {activeTab === 'cases' && (
         <div className="bg-white rounded-3xl border border-stone-200 shadow-xs overflow-hidden">
           <div className="p-4 border-b border-stone-200 bg-stone-50 flex items-center justify-between">
-            <span className="text-xs font-bold text-stone-700">Firestore `case` 資料表 (即時同步)</span>
-            <span className="text-2xs text-stone-500 font-mono">Collection: case / 共 {reports.length} 宗</span>
+            <span className="text-xs font-bold text-stone-700">{t('adminDashboard.cases.tableTitle')}</span>
+            <span className="text-2xs text-stone-500 font-mono">{t('adminDashboard.cases.tableMeta', { n: reports.length })}</span>
           </div>
 
           {reports.length === 0 ? (
             <div className="p-12 text-center text-stone-500 space-y-2">
-              <p className="text-sm font-bold text-stone-800">目前雲端資料庫中無任何通報個案</p>
-              <p className="text-xs text-stone-400">市民透過「我要通報」送出後，資料將自動存入 Firestore 並實時呈現在此。</p>
+              <p className="text-sm font-bold text-stone-800">{t('adminDashboard.cases.emptyTitle')}</p>
+              <p className="text-xs text-stone-400">{t('adminDashboard.cases.emptyBody')}</p>
             </div>
           ) : (
             <div className="divide-y divide-stone-100">
@@ -394,7 +397,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).style.visibility = 'hidden';
                         }}
-                        className={`w-12 h-12 rounded-lg object-cover ${isCoverSensitive(c) ? 'blur-md scale-110' : ''}`}/>
+                        className={`w-12 h-12 rounded-lg object-cover ${isCoverSensitive(c) ? 'blur-md scale-110' : ''}`}
+                      />
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <button
@@ -419,7 +423,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             fetchedContact ? (
                               <>
                                 <span>
-                                  通報人: {fetchedContact.reporterName || '未提供'} ({fetchedContact.reporterPhone || '無電話'})
+                                  {t('adminDashboard.cases.reporter', {
+                                    name: fetchedContact.reporterName || t('adminDashboard.cases.notProvided'),
+                                    phone: fetchedContact.reporterPhone || t('adminDashboard.cases.noPhone'),
+                                  })}
                                 </span>
                                 {fetchedContact.reporterEmail && (
                                   <span className="flex items-center gap-1 text-blue-600">
@@ -429,7 +436,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 )}
                               </>
                             ) : (
-                              <span className="text-stone-400">⚠ 未能讀取聯絡資料（資料不存在或讀取被拒）</span>
+                              <span className="text-stone-400">{t('adminDashboard.cases.contactFailed')}</span>
                             )
                           ) : (
                             <button
@@ -438,10 +445,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               disabled={loadingContactId === c.id}
                               className="text-2xs text-brand-700 font-bold underline hover:text-brand-800 cursor-pointer disabled:opacity-50"
                             >
-                              {loadingContactId === c.id ? '載入中...' : '👁 查看報案人聯絡資料'}
+                              {loadingContactId === c.id
+                                ? t('adminDashboard.cases.loading')
+                                : `👁 ${t('adminDashboard.cases.revealContact')}`}
                             </button>
                           )}
-                          <span>地點: {c.location.address}</span>
+                          <span>{t('adminDashboard.cases.location', { address: c.location.address })}</span>
                         </div>
                       </div>
                     </div>
@@ -452,20 +461,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         onChange={(e) => onUpdateCaseStatus(c.id, e.target.value as CaseStatus)}
                         className="px-2.5 py-1.5 rounded-xl text-xs bg-stone-50 border border-stone-300 font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none"
                       >
-                        <option value="pending">待處理 (Pending)</option>
-                        <option value="in_progress">救援前往中 (In Progress)</option>
-                        <option value="rescued">已成功救助 (Rescued)</option>
-                        <option value="closed">結案 (Closed)</option>
+                        {CASE_STATUS_OPTIONS.map((s) => (
+                          <option key={s} value={s}>
+                            {t(`adminDashboard.status.${s}`)}
+                          </option>
+                        ))}
                       </select>
 
                       <button
                         onClick={() => {
-                          if (confirm(`確認從 Firestore 永久刪除個案 #${c.id}？`)) {
+                          if (confirm(t('adminDashboard.cases.confirmDelete', { id: c.id }))) {
                             onDeleteCase(c.id);
                           }
                         }}
                         className="p-2 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors border border-rose-200 cursor-pointer"
-                        title="刪除個案"
+                        title={t('adminDashboard.cases.deleteTitle')}
+                        aria-label={t('adminDashboard.cases.deleteTitle')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -482,23 +493,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between bg-white rounded-2xl p-4 border border-stone-200 gap-3">
             <div>
-              <h3 className="font-bold text-sm text-stone-900">Firestore 合作 NGO 救助機構名冊</h3>
-              <p className="text-2xs text-stone-500">機構資料公開顯示；登入帳戶只有管理員睇到</p>
+              <h3 className="font-bold text-sm text-stone-900">{t('adminDashboard.ngos.title')}</h3>
+              <p className="text-2xs text-stone-500">{t('adminDashboard.ngos.subtitle')}</p>
             </div>
             <button
               onClick={() => setShowAddNGOModal(true)}
               className="px-3.5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-stone-950 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4" />
-              新增 NGO 機構
+              {t('adminDashboard.ngos.add')}
             </button>
           </div>
 
           {ngos.length === 0 ? (
             <div className="bg-white rounded-3xl border border-stone-200 p-12 text-center text-stone-500 space-y-3">
               <Building2 className="w-10 h-10 text-stone-300 mx-auto" />
-              <p className="text-sm font-bold text-stone-800">目前 Firestore 資料庫中尚未登記任何 NGO 機構</p>
-              <p className="text-xs text-stone-400">點擊上方「新增 NGO 機構」將合作組織登記至 Firestore 雲端資料庫。</p>
+              <p className="text-sm font-bold text-stone-800">{t('adminDashboard.ngos.emptyTitle')}</p>
+              <p className="text-xs text-stone-400">{t('adminDashboard.ngos.emptyBody')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -506,6 +517,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 const accounts = accountsByNgo[ngo.id] || [];
                 const website = safeWebsite(ngo.website);
                 const adding = busyAccountKey === `add:${ngo.id}`;
+                const capacity = ngo.capacityStatus || 'available';
+                const animals = (ngo.acceptedAnimals || []).map(animalName).join(t('adminDashboard.listSeparator'));
 
                 return (
                   <div key={ngo.id} className="bg-white rounded-3xl p-5 border border-stone-200 shadow-xs space-y-3 min-w-0">
@@ -515,22 +528,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <p className="text-2xs text-stone-500">{ngo.englishName}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className={`px-2.5 py-0.5 rounded-full text-2xs font-bold ${
-                          ngo.capacityStatus === 'busy' ? 'bg-amber-100 text-amber-800'
-                            : ngo.capacityStatus === 'full' ? 'bg-rose-100 text-rose-800'
-                            : 'bg-emerald-100 text-emerald-800'
-                        }`}>
-                          {ngo.capacityStatus === 'busy' ? '救援繁重' : ngo.capacityStatus === 'full' ? '暫停收案' : '正常接案'}
+                        <span className={`px-2.5 py-0.5 rounded-full text-2xs font-bold ${CAPACITY_BADGE[capacity] ?? CAPACITY_BADGE.available}`}>
+                          {t(`adminDashboard.ngos.capacity.${capacity}`)}
                         </span>
                         <button
                           onClick={() => {
-                            const extra = accounts.length > 0 ? `\n佢嘅 ${accounts.length} 個登入帳戶會一齊移除並即刻登出。` : '';
-                            if (confirm(`確認從 Firestore 刪除 NGO「${ngo.name}」？${extra}`)) {
+                            const extra =
+                              accounts.length > 0
+                                ? `\n${t('adminDashboard.ngos.confirmDeleteAccounts', { n: accounts.length })}`
+                                : '';
+                            if (confirm(t('adminDashboard.ngos.confirmDelete', { name: ngo.name }) + extra)) {
                               onDeleteNGO(ngo.id);
                             }
                           }}
                           className="p-1 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
-                          title="刪除機構"
+                          title={t('adminDashboard.ngos.deleteTitle')}
+                          aria-label={t('adminDashboard.ngos.deleteTitle')}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -538,8 +551,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </div>
 
                     <div className="text-xs text-stone-600 space-y-1 break-words">
-                      <p>📍 {ngo.address} ({ngo.district})</p>
-                      <p>📞 熱線: {ngo.hotline}{ngo.whatsapp ? ` ／ WhatsApp: ${ngo.whatsapp}` : ''}</p>
+                      <p>📍 {t('adminDashboard.ngos.address', { address: ngo.address, district: ngo.district })}</p>
+                      <p>
+                        📞 {t('adminDashboard.ngos.hotline', { hotline: ngo.hotline })}
+                        {ngo.whatsapp ? t('adminDashboard.ngos.whatsapp', { whatsapp: ngo.whatsapp }) : ''}
+                      </p>
                       {ngo.publicEmail && (
                         <p className="flex items-center gap-1"><Mail className="w-3 h-3 shrink-0" />{ngo.publicEmail}</p>
                       )}
@@ -551,18 +567,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           </a>
                         </p>
                       )}
-                      <p><Clock className="w-3 h-3 inline mr-1" />營業: {ngo.operatingHours}</p>
-                      <p>🐾 接受: {(ngo.acceptedAnimals || []).map((a) => ANIMAL_TYPE_OPTIONS.find((o) => o.value === a)?.label || a).join('、') || '未設定'}</p>
+                      <p>
+                        <Clock className="w-3 h-3 inline mr-1" />
+                        {t('adminDashboard.ngos.hours', { hours: ngo.operatingHours })}
+                      </p>
+                      <p>🐾 {t('adminDashboard.ngos.accepts', { animals: animals || t('adminDashboard.ngos.notSet') })}</p>
                     </div>
 
-                    {/* 登入帳戶（唔公開） */}
+                    {/* 登入帳戶（不公開） */}
                     <div className="pt-2 border-t border-stone-100 space-y-2">
                       <p className="text-2xs font-bold text-stone-500 flex items-center gap-1">
                         <KeyRound className="w-3 h-3" />
-                        登入帳戶（唔公開，{accounts.length} 個）
+                        {t('adminDashboard.accounts.title', { n: accounts.length })}
                       </p>
                       {accounts.length === 0 ? (
-                        <p className="text-2xs text-stone-400">未有帳戶，呢間機構暫時登入唔到。</p>
+                        <p className="text-2xs text-stone-400">{t('adminDashboard.accounts.empty')}</p>
                       ) : (
                         <ul className="space-y-1">
                           {accounts.map((a) => (
@@ -573,7 +592,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 onClick={() => handleRemoveAccount(a)}
                                 disabled={busyAccountKey === a.uid}
                                 className="text-rose-500 hover:text-rose-700 disabled:opacity-40 cursor-pointer shrink-0"
-                                title="移除帳戶"
+                                title={t('adminDashboard.accounts.removeTitle')}
+                                aria-label={t('adminDashboard.accounts.removeTitle')}
                               >
                                 <X className="w-3.5 h-3.5" />
                               </button>
@@ -592,7 +612,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               handleAddAccount(ngo.id);
                             }
                           }}
-                          placeholder="加職員登入電郵"
+                          placeholder={t('adminDashboard.accounts.addPlaceholder')}
                           className="flex-1 min-w-0 px-2.5 py-1.5 text-xs bg-stone-50 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                         />
                         <button
@@ -602,38 +622,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           className="px-2.5 py-1.5 rounded-lg bg-stone-900 text-white text-2xs font-bold flex items-center gap-1 disabled:opacity-50 cursor-pointer shrink-0"
                         >
                           <UserPlus className="w-3.5 h-3.5" />
-                          {adding ? '處理中…' : '加帳戶'}
+                          {adding ? t('adminDashboard.accounts.processing') : t('adminDashboard.accounts.add')}
                         </button>
                       </div>
                     </div>
 
                     <div className="pt-2 border-t border-stone-100 flex items-center justify-between flex-wrap gap-2">
-                      <span className="text-2xs font-bold text-stone-500">調整接案狀態：</span>
+                      <span className="text-2xs font-bold text-stone-500">{t('adminDashboard.ngos.capacityLabel')}</span>
                       <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => onUpdateNGOCapacity(ngo.id, 'available')}
-                          className={`px-2.5 py-1 rounded-lg text-2xs font-bold transition-colors cursor-pointer ${
-                            ngo.capacityStatus === 'available' || !ngo.capacityStatus ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                          }`}
-                        >
-                          正常接案
-                        </button>
-                        <button
-                          onClick={() => onUpdateNGOCapacity(ngo.id, 'busy')}
-                          className={`px-2.5 py-1 rounded-lg text-2xs font-bold transition-colors cursor-pointer ${
-                            ngo.capacityStatus === 'busy' ? 'bg-amber-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                          }`}
-                        >
-                          繁重
-                        </button>
-                        <button
-                          onClick={() => onUpdateNGOCapacity(ngo.id, 'full')}
-                          className={`px-2.5 py-1 rounded-lg text-2xs font-bold transition-colors cursor-pointer ${
-                            ngo.capacityStatus === 'full' ? 'bg-rose-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                          }`}
-                        >
-                          暫停收案
-                        </button>
+                        {CAPACITY_OPTIONS.map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => onUpdateNGOCapacity(ngo.id, opt)}
+                            className={`px-2.5 py-1 rounded-lg text-2xs font-bold transition-colors cursor-pointer ${
+                              capacity === opt ? CAPACITY_ACTIVE[opt] : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                            }`}
+                          >
+                            {t(`adminDashboard.ngos.capacityButton.${opt}`)}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -649,20 +656,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="flex items-center justify-between border-b border-stone-800 pb-3">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-bold text-stone-100">實時系統日誌 (Structured Logs)</span>
+              <span className="text-xs font-bold text-stone-100">{t('adminDashboard.logs.title')}</span>
             </div>
             <button
               onClick={handleRefreshLogs}
               className="flex items-center gap-1 px-3 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-2xs text-stone-300 transition-colors cursor-pointer"
             >
               <RefreshCw className="w-3 h-3" />
-              重新整理
+              {t('adminDashboard.logs.refresh')}
             </button>
           </div>
 
           <div className="max-h-96 overflow-y-auto space-y-2 text-2xs pr-1">
             {logs.length === 0 ? (
-              <p className="text-stone-500 py-4 text-center">暫無日誌記錄</p>
+              <p className="text-stone-500 py-4 text-center">{t('adminDashboard.logs.empty')}</p>
             ) : (
               logs.map((log) => (
                 <div
@@ -675,7 +682,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 >
                   <div className="flex items-center justify-between text-2xs text-stone-400 mb-1">
                     <span className="font-bold uppercase tracking-wider text-brand-400">[{log.category}]</span>
-                    <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
+                    <span>{new Date(log.timestamp).toLocaleTimeString(getApiLang())}</span>
                   </div>
                   <p className="font-sans font-medium">{log.message}</p>
                   {log.details && (
@@ -696,47 +703,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="flex items-center justify-between border-b border-stone-200 pb-3">
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-brand-600" />
-                <h3 className="font-bold text-base text-stone-900">新增合作 NGO 機構</h3>
+                <h3 className="font-bold text-base text-stone-900">{t('adminDashboard.form.title')}</h3>
               </div>
-              <button onClick={closeAddNGOModal} disabled={savingNGO} className="text-stone-400 hover:text-stone-600 font-bold disabled:opacity-40">
+              <button
+                onClick={closeAddNGOModal}
+                disabled={savingNGO}
+                aria-label={t('adminDashboard.form.cancel')}
+                className="text-stone-400 hover:text-stone-600 font-bold disabled:opacity-40"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSaveNewNGO} className="space-y-3.5 text-xs text-stone-700">
-              <SectionTitle>基本資料</SectionTitle>
+              <SectionTitle>{t('adminDashboard.form.sectionBasic')}</SectionTitle>
               <div>
-                <label className="block font-bold mb-1">機構中文全名 *</label>
-                <input type="text" value={newNGOName} onChange={(e) => setNewNGOName(e.target.value)} placeholder="例如：XX 動物救援協會" maxLength={100} className={INPUT_CLS} required />
+                <label className="block font-bold mb-1">{t('adminDashboard.form.name')}</label>
+                <input type="text" value={newNGOName} onChange={(e) => setNewNGOName(e.target.value)} placeholder={t('adminDashboard.form.namePlaceholder')} maxLength={100} className={INPUT_CLS} required />
               </div>
               <div>
-                <label className="block font-bold mb-1">機構英文名稱</label>
-                <input type="text" value={newNGOEnglishName} onChange={(e) => setNewNGOEnglishName(e.target.value)} placeholder="例如：XX Animal Rescue" maxLength={100} className={INPUT_CLS} />
+                <label className="block font-bold mb-1">{t('adminDashboard.form.englishName')}</label>
+                <input type="text" value={newNGOEnglishName} onChange={(e) => setNewNGOEnglishName(e.target.value)} placeholder={t('adminDashboard.form.englishNamePlaceholder')} maxLength={100} className={INPUT_CLS} />
               </div>
 
-              <SectionTitle>公開聯絡資料（市民同報案人睇到）</SectionTitle>
+              <SectionTitle>{t('adminDashboard.form.sectionContact')}</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold mb-1">急救專線熱線 *</label>
-                  <input type="tel" value={newNGOHotline} onChange={(e) => setNewNGOHotline(e.target.value)} placeholder="例如 +852 2711 1000" className={INPUT_CLS} required />
+                  <label className="block font-bold mb-1">{t('adminDashboard.form.hotline')}</label>
+                  <input type="tel" value={newNGOHotline} onChange={(e) => setNewNGOHotline(e.target.value)} placeholder={t('adminDashboard.form.hotlinePlaceholder')} className={INPUT_CLS} required />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">WhatsApp（連國家區號）</label>
-                  <input type="tel" value={newNGOWhatsapp} onChange={(e) => setNewNGOWhatsapp(e.target.value)} placeholder="例如 85291234567" className={INPUT_CLS} />
+                  <label className="block font-bold mb-1">{t('adminDashboard.form.whatsapp')}</label>
+                  <input type="tel" value={newNGOWhatsapp} onChange={(e) => setNewNGOWhatsapp(e.target.value)} placeholder={t('adminDashboard.form.whatsappPlaceholder')} className={INPUT_CLS} />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">公開電郵</label>
-                  <input type="email" value={newNGOPublicEmail} onChange={(e) => setNewNGOPublicEmail(e.target.value)} placeholder="例如 info@example.org" maxLength={200} className={INPUT_CLS} />
+                  <label className="block font-bold mb-1">{t('adminDashboard.form.publicEmail')}</label>
+                  <input type="email" value={newNGOPublicEmail} onChange={(e) => setNewNGOPublicEmail(e.target.value)} placeholder={t('adminDashboard.form.publicEmailPlaceholder')} maxLength={200} className={INPUT_CLS} />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">網站</label>
+                  <label className="block font-bold mb-1">{t('adminDashboard.form.website')}</label>
                   <input type="url" value={newNGOWebsite} onChange={(e) => setNewNGOWebsite(e.target.value)} placeholder="https://..." maxLength={300} className={INPUT_CLS} />
                 </div>
               </div>
 
-              <SectionTitle>地點</SectionTitle>
+              <SectionTitle>{t('adminDashboard.form.sectionLocation')}</SectionTitle>
               <div>
-                <label className="block font-bold mb-1">機構地址 / 救助中心 *</label>
+                <label className="block font-bold mb-1">{t('adminDashboard.form.address')}</label>
                 <AddressAutocomplete
                   value={newNGOAddress}
                   onChange={setNewNGOAddress}
@@ -748,59 +760,57 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   }}
                   onEnter={() => {}}
                   bias={null}
-                  placeholder="輸入機構地址，選擇建議地址後會自動填入經緯度"
+                  placeholder={t('adminDashboard.form.addressPlaceholder')}
                 />
-                <p className="text-2xs text-stone-400 mt-1">選擇建議地址後，下方的分區及經緯度會自動填入。</p>
+                <p className="text-2xs text-stone-400 mt-1">{t('adminDashboard.form.addressHint')}</p>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold mb-1">分區</label>
-                  <input type="text" value={newNGODistrict} onChange={(e) => setNewNGODistrict(e.target.value)} placeholder="例如：油尖旺區" className={INPUT_CLS} />
+                  <label className="block font-bold mb-1">{t('adminDashboard.form.district')}</label>
+                  <input type="text" value={newNGODistrict} onChange={(e) => setNewNGODistrict(e.target.value)} placeholder={t('adminDashboard.form.districtPlaceholder')} className={INPUT_CLS} />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">緯度 (Lat)</label>
-                  <input type="text" value={newNGOLat} onChange={(e) => setNewNGOLat(e.target.value)} placeholder="自動填寫" className={INPUT_CLS} />
+                  <label className="block font-bold mb-1">{t('adminDashboard.form.lat')}</label>
+                  <input type="text" value={newNGOLat} onChange={(e) => setNewNGOLat(e.target.value)} placeholder={t('adminDashboard.form.autoFill')} className={INPUT_CLS} />
                 </div>
                 <div>
-                  <label className="block font-bold mb-1">經度 (Lng)</label>
-                  <input type="text" value={newNGOLng} onChange={(e) => setNewNGOLng(e.target.value)} placeholder="自動填寫" className={INPUT_CLS} />
+                  <label className="block font-bold mb-1">{t('adminDashboard.form.lng')}</label>
+                  <input type="text" value={newNGOLng} onChange={(e) => setNewNGOLng(e.target.value)} placeholder={t('adminDashboard.form.autoFill')} className={INPUT_CLS} />
                 </div>
               </div>
 
-              <SectionTitle>服務</SectionTitle>
+              <SectionTitle>{t('adminDashboard.form.sectionService')}</SectionTitle>
               <div>
-                <label className="block font-bold mb-1.5">接受救助動物類型</label>
+                <label className="block font-bold mb-1.5">{t('adminDashboard.form.acceptedAnimals')}</label>
                 <div className="flex flex-wrap gap-3">
-                  {ANIMAL_TYPE_OPTIONS.map((opt) => (
-                    <label key={opt.value} className="flex items-center gap-1.5 cursor-pointer">
+                  {ANIMAL_TYPES.map((type) => (
+                    <label key={type} className="flex items-center gap-1.5 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={newNGOAcceptedAnimals.includes(opt.value)}
-                        onChange={() => toggleAcceptedAnimal(opt.value)}
+                        checked={newNGOAcceptedAnimals.includes(type)}
+                        onChange={() => toggleAcceptedAnimal(type)}
                         className="rounded text-brand-600 focus:ring-brand-500"
                       />
-                      {opt.label}
+                      {animalName(type)}
                     </label>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="block font-bold mb-1">專長項目 (以逗號分隔)</label>
-                <input type="text" value={newNGOSpecialties} onChange={(e) => setNewNGOSpecialties(e.target.value)} placeholder="24h緊急出車, 唐狗急救, 誘捕籠" className={INPUT_CLS} />
+                <label className="block font-bold mb-1">{t('adminDashboard.form.specialties')}</label>
+                <input type="text" value={newNGOSpecialties} onChange={(e) => setNewNGOSpecialties(e.target.value)} placeholder={t('adminDashboard.form.specialtiesPlaceholder')} className={INPUT_CLS} />
               </div>
               <div>
-                <label className="block font-bold mb-1">服務時間</label>
-                <input type="text" value={newNGOOperatingHours} onChange={(e) => setNewNGOOperatingHours(e.target.value)} placeholder="例如：每日 09:00–21:00" className={INPUT_CLS} />
+                <label className="block font-bold mb-1">{t('adminDashboard.form.hours')}</label>
+                <input type="text" value={newNGOOperatingHours} onChange={(e) => setNewNGOOperatingHours(e.target.value)} placeholder={t('adminDashboard.form.hoursPlaceholder')} className={INPUT_CLS} />
               </div>
               <div className="flex items-center gap-2 pt-1">
                 <input type="checkbox" id="ngo-24h-cb" checked={newNGO24h} onChange={(e) => setNewNGO24h(e.target.checked)} className="rounded text-brand-600 focus:ring-brand-500" />
-                <label htmlFor="ngo-24h-cb" className="font-bold cursor-pointer">具備 24 小時緊急救援車與夜間執勤</label>
+                <label htmlFor="ngo-24h-cb" className="font-bold cursor-pointer">{t('adminDashboard.form.emergency24h')}</label>
               </div>
 
-              <SectionTitle>登入帳戶（唔公開）</SectionTitle>
-              <p className="text-2xs text-stone-500 -mt-2">
-                每個電郵會收到「設定密碼連結」，設定好就可以登入 NGO 工作台接手案件。可以留空，之後喺機構卡再加。
-              </p>
+              <SectionTitle>{t('adminDashboard.form.sectionAccounts')}</SectionTitle>
+              <p className="text-2xs text-stone-500 -mt-2">{t('adminDashboard.form.accountsHint')}</p>
               <div className="space-y-2">
                 {newLoginEmails.map((value, i) => (
                   <div key={i} className="flex items-center gap-2">
@@ -808,7 +818,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       type="email"
                       value={value}
                       onChange={(e) => updateLoginEmail(i, e.target.value)}
-                      placeholder="職員登入電郵"
+                      placeholder={t('adminDashboard.form.loginEmailPlaceholder')}
                       maxLength={200}
                       className={INPUT_CLS}
                     />
@@ -816,7 +826,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       type="button"
                       onClick={() => removeLoginEmailRow(i)}
                       className="p-2 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer shrink-0"
-                      title="移除"
+                      title={t('adminDashboard.form.remove')}
+                      aria-label={t('adminDashboard.form.remove')}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -829,15 +840,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     className="text-2xs font-bold text-brand-700 hover:text-brand-800 flex items-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    加多個帳戶（最多 {MAX_LOGIN_EMAILS} 個）
+                    {t('adminDashboard.form.addAccountRow', { max: MAX_LOGIN_EMAILS })}
                   </button>
                 )}
               </div>
 
               <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
-                <button type="button" onClick={closeAddNGOModal} disabled={savingNGO} className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold disabled:opacity-50">取消</button>
+                <button type="button" onClick={closeAddNGOModal} disabled={savingNGO} className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold disabled:opacity-50">
+                  {t('adminDashboard.form.cancel')}
+                </button>
                 <button type="submit" disabled={savingNGO} className="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-stone-950 font-bold shadow-xs cursor-pointer disabled:opacity-50">
-                  {savingNGO ? '儲存中…' : '儲存機構及建立帳戶'}
+                  {savingNGO ? t('adminDashboard.form.saving') : t('adminDashboard.form.save')}
                 </button>
               </div>
             </form>

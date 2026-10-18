@@ -623,7 +623,141 @@
     "newComments": "{{count}} new comment(s)"
   },
   "adminDashboard": {
-    "viewDetails": "View case details"
+    "viewDetails": "View case details",
+        "badge": "Super Admin",
+    "headerTitle": "PawPulse Admin & Rescue Dispatch Console",
+    "headerSubtitle": "Maintain the Firestore database directly (case review, NGO registration, log monitoring).",
+    "signOut": "Sign out",
+    "tabs": {
+      "cases": "Case review ({{n}})",
+      "ngos": "NGO directory ({{n}})",
+      "logs": "System logs & monitoring"
+    },
+    "cases": {
+      "tableTitle": "Firestore `case` collection (live sync)",
+      "tableMeta": "Collection: case / {{n}} total",
+      "emptyTitle": "No reported cases in the database yet",
+      "emptyBody": "Reports submitted via \"Report\" are saved to Firestore and appear here in real time.",
+      "reporter": "Reporter: {{name}} ({{phone}})",
+      "notProvided": "Not provided",
+      "noPhone": "No phone",
+      "contactFailed": "⚠ Unable to load contact details (missing or access denied)",
+      "loading": "Loading…",
+      "revealContact": "View reporter contact",
+      "location": "Location: {{address}}",
+      "deleteTitle": "Delete case",
+      "confirmDelete": "Permanently delete case #{{id}} from Firestore?"
+    },
+    "status": {
+      "pending": "Pending",
+      "in_progress": "Rescue in progress",
+      "rescued": "Rescued",
+      "closed": "Closed"
+    },
+    "animals": {
+      "cat": "Cat",
+      "dog": "Dog",
+      "bird": "Bird",
+      "other": "Other"
+    },
+    "listSeparator": ", ",
+    "ngos": {
+      "title": "Partner NGO directory (Firestore)",
+      "subtitle": "Organisation details are public; login accounts are visible to admins only",
+      "add": "Add NGO",
+      "emptyTitle": "No NGOs registered in Firestore yet",
+      "emptyBody": "Click \"Add NGO\" above to register a partner organisation.",
+      "deleteTitle": "Delete organisation",
+      "confirmDelete": "Delete NGO \"{{name}}\" from Firestore?",
+      "confirmDeleteAccounts": "Its {{n}} login account(s) will also be removed and signed out immediately.",
+      "address": "{{address}} ({{district}})",
+      "hotline": "Hotline: {{hotline}}",
+      "whatsapp": " / WhatsApp: {{whatsapp}}",
+      "hours": "Hours: {{hours}}",
+      "accepts": "Accepts: {{animals}}",
+      "notSet": "Not set",
+      "capacityLabel": "Intake status:",
+      "capacity": {
+        "available": "Accepting cases",
+        "busy": "High workload",
+        "full": "Not accepting"
+      },
+      "capacityButton": {
+        "available": "Available",
+        "busy": "Busy",
+        "full": "Paused"
+      }
+    },
+    "accounts": {
+      "title": "Login accounts (private, {{n}})",
+      "empty": "No accounts yet. This organisation cannot sign in.",
+      "removeTitle": "Remove account",
+      "addPlaceholder": "Staff login email",
+      "add": "Add account",
+      "processing": "Processing…",
+      "confirmRemove": "Remove login account \"{{email}}\"? It will be signed out immediately and become a regular user.",
+      "removeFailed": "Failed to remove: {{error}}",
+      "failedHeader": "The following accounts could not be created:",
+      "failedItem": "{{email}}: {{error}}",
+      "simulated": "Gmail is not configured (simulated mode). Set-password links were printed to the F12 Console.",
+      "invalidEmail": "Invalid login email",
+      "invalidEmailWith": "Invalid login email: {{email}}"
+    },
+    "logs": {
+      "title": "Live system logs (structured)",
+      "refresh": "Refresh",
+      "empty": "No log entries"
+    },
+    "form": {
+      "title": "Add partner NGO",
+      "sectionBasic": "Basic information",
+      "name": "Organisation name (Chinese) *",
+      "namePlaceholder": "e.g. XX 動物救援協會",
+      "englishName": "Organisation name (English)",
+      "englishNamePlaceholder": "e.g. XX Animal Rescue",
+      "sectionContact": "Public contact (visible to the public and reporters)",
+      "hotline": "Emergency hotline *",
+      "hotlinePlaceholder": "e.g. +852 2711 1000",
+      "whatsapp": "WhatsApp (with country code)",
+      "whatsappPlaceholder": "e.g. 85291234567",
+      "publicEmail": "Public email",
+      "publicEmailPlaceholder": "e.g. info@example.org",
+      "website": "Website",
+      "sectionLocation": "Location",
+      "address": "Address / rescue centre *",
+      "addressPlaceholder": "Enter an address and pick a suggestion to fill in coordinates",
+      "addressHint": "Picking a suggested address fills in the district and coordinates below.",
+      "district": "District",
+      "districtPlaceholder": "e.g. Yau Tsim Mong",
+      "lat": "Latitude",
+      "lng": "Longitude",
+      "autoFill": "Auto-filled",
+      "sectionService": "Services",
+      "acceptedAnimals": "Animals accepted",
+      "specialties": "Specialties (comma-separated)",
+      "specialtiesPlaceholder": "24h emergency van, dog first aid, humane traps",
+      "hours": "Operating hours",
+      "hoursPlaceholder": "e.g. Daily 09:00–21:00",
+      "emergency24h": "24-hour emergency rescue vehicle and night duty",
+      "sectionAccounts": "Login accounts (private)",
+      "accountsHint": "Each email receives a set-password link and can then sign in to the NGO workspace to accept cases. You can leave this blank and add accounts later from the NGO card.",
+      "loginEmailPlaceholder": "Staff login email",
+      "remove": "Remove",
+      "addAccountRow": "Add another account (max {{max}})",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "save": "Save NGO & create accounts",
+      "defaultHours": "24-hour emergency response",
+      "defaultSpecialties": "Stray cat/dog first aid, fractures and wounds, trapping and shelter",
+      "districtPending": "District to be confirmed"
+    },
+    "errors": {
+      "required": "Please enter the organisation name and emergency hotline",
+      "location": "Please pick a suggested address or enter valid coordinates",
+      "publicEmail": "Invalid public email",
+      "website": "Website must start with https:// or http://"
+    }
+
   },
     "member": {
     "lastName": "Last name",
