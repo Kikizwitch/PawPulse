@@ -635,7 +635,7 @@
             "logs": "系統日誌與監控"
         },
         "cases": {
-            "tableTitle": "Firestore `case` 資料表（即時同步）",
+            "tableTitle": "資料表",
             "tableMeta": "Collection: case／共 {{n}} 宗",
             "emptyTitle": "目前雲端資料庫中沒有任何通報個案",
             "emptyBody": "市民透過「我要通報」送出後，資料將自動存入 Firestore 並即時顯示於此。",

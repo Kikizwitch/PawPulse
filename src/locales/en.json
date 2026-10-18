@@ -634,7 +634,7 @@
       "logs": "System logs & monitoring"
     },
     "cases": {
-      "tableTitle": "Firestore `case` collection (live sync)",
+      "tableTitle": "collection",
       "tableMeta": "Collection: case / {{n}} total",
       "emptyTitle": "No reported cases in the database yet",
       "emptyBody": "Reports submitted via \"Report\" are saved to Firestore and appear here in real time.",
