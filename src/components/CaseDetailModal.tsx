@@ -5,7 +5,8 @@ import { AIAnalysisCard } from './AIAnalysisCard';
 import { NGOMatchFeedback } from './NGOMatchFeedback';
 import { getGoogleMapsDirectionsUrl } from '../utils/location';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchCaseContact, ReporterContactInfo, rankFirestoreNGOs } from '../services/caseService';
+import { fetchCaseContact, ReporterContactInfo } from '../services/caseService';
+import { useCaseMatches } from '../hooks/useCaseMatches';
 import { statusLabel, animalLabel, CASE_STATUSES } from '../utils/caseLabels';
 import { getApiLang } from '../i18n';
 import {
@@ -19,6 +20,7 @@ import { AnimalIcon } from './AnimalIcons';
 import { PhotoGallery } from './PhotoGallery';
 import { GeminiIcon, CareIcon } from './BrandIcons';
 import { getCasePhotos } from '../utils/casePhotos';
+import { isAiPending } from '../utils/aiAnalysis';
 import { NGO_STATUSES } from './NgoWorkspace';
 import DeletionRequestBanner from './DeletionRequestBanner';
 import CaseComments from './CaseComments';
@@ -109,10 +111,9 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
     reporterEmail: contactInfo?.reporterEmail || report.reporterEmail,
   };
 
-  const liveMatchedNGOs = useMemo(
-    () => rankFirestoreNGOs(ngos, report.location.lat, report.location.lng, report.animalType, report.urgency).slice(0, 3),
-    [ngos, report.location.lat, report.location.lng, report.animalType, report.urgency]
-  );
+  // NGO 配對喺 server 做；案件或者機構資料改咗會自動重新攞
+  const matchState = useCaseMatches(report, ngos);
+  const liveMatchedNGOs = matchState.matchedNGOs;
 
   const reporterPhone = contactInfo?.reporterPhone;
   const hasRealPhone = !!reporterPhone && !PHONE_PLACEHOLDERS.includes(reporterPhone);
@@ -379,6 +380,13 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
             <div>
               {report.aiAnalysis ? (
                 <AIAnalysisCard analysis={report.aiAnalysis} />
+              ) : isAiPending(report) ? (
+                // AI 分析中：結果出咗會經 Firestore 自動更新
+                <div className="p-8 text-center text-stone-500 bg-brand-50/40 rounded-2xl border border-dashed border-brand-300 space-y-1.5">
+                  <Loader2 className="w-5 h-5 text-brand-600 animate-spin mx-auto" />
+                  <p className="text-sm font-bold text-stone-700">{t('caseModal.aiAnalyzingTitle')}</p>
+                  <p className="text-xs text-stone-400">{t('caseModal.aiAnalyzingBody')}</p>
+                </div>
               ) : (
                 <div className="p-8 text-center text-stone-500 bg-stone-50 rounded-2xl border border-stone-200 space-y-1.5">
                   <p className="text-sm font-bold text-stone-700">{t('caseModal.aiNoResponseTitle')}</p>
@@ -389,7 +397,14 @@ export const CaseDetailModal: React.FC<CaseDetailModalProps> = ({
           )}
 
           {activeTab === 'ngos' && (
-            <NGOMatchFeedback report={enrichedReport} matchedNGOs={liveMatchedNGOs} onDispatchToNGO={onDispatchToNGO} />
+            <NGOMatchFeedback
+              report={enrichedReport}
+              matchedNGOs={liveMatchedNGOs}
+              requiredCapabilities={matchState.requiredCapabilities}
+              loading={matchState.loading}
+              error={matchState.error}
+              onDispatchToNGO={onDispatchToNGO}
+            />
           )}
 
           {/* 5D 留言：喺分頁下面，唔理揀咗 AI 定 NGO 分頁都會顯示 */}

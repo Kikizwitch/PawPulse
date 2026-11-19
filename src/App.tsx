@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { StrayReport, CaseStatus, NGOOrganization } from './types';
+import { StrayReport, CaseStatus, NGOOrganization, AIAnalysisResult, UrgencyLevel } from './types';
 import { Sidebar, AppTab, ROLE_NAV_ITEM, isRoleTab } from './components/Sidebar';
 import { LoginModal } from './components/LoginModal';
 import { ReportForm } from './components/ReportForm';
@@ -26,8 +26,9 @@ import {
   createNGOInFirestore,
   deleteNGOInFirestore,
   updateNGOCapacity,
-  rankFirestoreNGOs,
+  updateNGOCapabilities,
   docToReport,
+  subscribeToCase,
   CASE_COLLECTION,
 } from './services/caseService';
 import { getEmergencyContact, getEmergencyHint, telHref } from './config/emergency';
@@ -41,12 +42,26 @@ import {
   AlertTriangle,
   Plus,
   X,UserCog ,
+  Loader2,
 } from 'lucide-react';
+import { isAiPending } from './utils/aiAnalysis';
+import { useCaseMatches } from './hooks/useCaseMatches';
+import type { NgoCapability } from './config/ngoCapabilities';
 import { NgoWorkspace } from './components/NgoWorkspace';
 import MyCases from './components/MyCases';
 import { SetPasswordPage } from './components/SetPasswordPage';
 import { MemberPrompts } from './components/MemberPrompts';
 import { AccountSettingsModal } from './components/AccountSettingsModal';
+
+// POST /api/cases/:caseId/analyze 嘅回應
+// queued = 已排隊（Cloud Tasks），結果之後經 Firestore 更新；analysis = 冇 Cloud Tasks 時直接分析嘅結果
+type AnalyzeResponse = {
+  analysis?: AIAnalysisResult;
+  urgency?: string;
+  noResponse?: boolean;
+  queued?: boolean;
+};
+const URGENCY_LEVELS: UrgencyLevel[] = ['P0', 'P1', 'P2'];
 
 function AppContent() {
   const { t } = useTranslation();
@@ -147,6 +162,38 @@ function AppContent() {
     ? reports.find((r) => r.id === selectedReportForModal.id) ?? selectedReportForModal
     : null;
 
+  // AI 結果入嚟：更新緊急程度同結果（NGO 配對由 useCaseMatches 跟住重新攞）
+  const withLiveAi = (
+    report: StrayReport,
+    analysis: AIAnalysisResult | null | undefined,
+    urgency: UrgencyLevel,
+    aiStatus: StrayReport['aiStatus']
+  ): StrayReport => ({
+    ...report,
+    urgency,
+    aiAnalysis: analysis ?? null,
+    aiStatus,
+  });
+
+  // 成功畫面嘅 NGO 配對（server 排名）
+  const submittedMatches = useCaseMatches(justSubmittedReport, ngos);
+
+  // 成功畫面：即時睇住呢宗案件，AI 分析完（Cloud Tasks）就自動更新
+  const submittedId = justSubmittedReport?.id;
+  useEffect(() => {
+    if (!submittedId) return;
+    return subscribeToCase(submittedId, (live) => {
+      if (!live) return;
+      setJustSubmittedReport((prev) => {
+        if (!prev || prev.id !== live.id) return prev;
+        if (prev.aiStatus === live.aiStatus && prev.aiAnalysis === live.aiAnalysis && prev.urgency === live.urgency) return prev;
+        return withLiveAi(prev, live.aiAnalysis, live.urgency, live.aiStatus);
+      });
+    });
+    // withLiveAi 冇用到會變嘅值，唔使重新訂閱
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submittedId]);
+
   const handleCreateReport = async (newReport: StrayReport): Promise<boolean> => {
     setSubmitFailed(false);
 
@@ -161,25 +208,18 @@ function AppContent() {
     const lang = getBrowserLanguage();
 
     // 案件已儲存，再請 server 做 AI 分析；失敗都唔影響報案（維持 P1）
+    // 有 Cloud Tasks：server 排隊後即刻回 202，成功畫面用 onSnapshot 等結果（重試由 Cloud Tasks 負責）
     let finalReport = newReport;
     try {
       const aiRes = await apiFetch(`/api/cases/${encodeURIComponent(newReport.id)}/analyze`, {
         method: 'POST',
         body: JSON.stringify({ lang }),
       });
-      if (aiRes.ok) {
-        const data = await aiRes.json();
-        if (data?.analysis && ['P0', 'P1', 'P2'].includes(data.urgency)) {
-          finalReport = {
-            ...newReport,
-            urgency: data.urgency,
-            aiAnalysis: data.analysis,
-            geminiResponse: data.analysis,
-            matchedNGOs: rankFirestoreNGOs(
-              ngos, newReport.location.lat, newReport.location.lng, newReport.animalType, data.urgency
-            ).slice(0, 3),
-          };
-        }
+      const data = aiRes.ok ? ((await aiRes.json()) as AnalyzeResponse) : null;
+      if (data?.queued) {
+        finalReport = { ...newReport, aiStatus: 'queued' };
+      } else if (data?.analysis && URGENCY_LEVELS.includes(data.urgency as UrgencyLevel)) {
+        finalReport = withLiveAi(newReport, data.analysis, data.urgency as UrgencyLevel, 'done');
       }
     } catch (aiErr) {
       console.warn('AI analysis request failed:', aiErr);
@@ -325,6 +365,18 @@ function AppContent() {
       await updateNGOCapacity(ngoId, capacity);
     } catch (e) {
       console.error('Failed to update NGO capacity in Firestore:', e);
+      setNgos(previousNgos);
+    }
+  };
+
+  // admin 改機構能力（樂觀更新，失敗就還原）
+  const handleUpdateNGOCapabilities = async (ngoId: string, capabilities: NgoCapability[]) => {
+    const previousNgos = ngos;
+    setNgos((prev) => prev.map((n) => (n.id === ngoId ? { ...n, capabilities } : n)));
+    try {
+      await updateNGOCapabilities(ngoId, capabilities);
+    } catch (e) {
+      console.error('Failed to update NGO capabilities in Firestore:', e);
       setNgos(previousNgos);
     }
   };
@@ -476,7 +528,11 @@ function AppContent() {
                         <div className="min-w-0">
                           <h3 className="font-semibold text-base break-words">{t('app.successTitle', { id: justSubmittedReport.id })}</h3>
                           <p className="text-xs text-stone-500 mt-0.5">
-                            {justSubmittedReport.aiAnalysis ? t('app.successWithAi') : t('app.successNoAi')}
+                            {justSubmittedReport.aiAnalysis
+                              ? t('app.successWithAi')
+                              : isAiPending(justSubmittedReport)
+                                ? t('app.successAnalyzing')
+                                : t('app.successNoAi')}
                           </p>
                         </div>
                       </div>
@@ -494,6 +550,13 @@ function AppContent() {
 
                     {justSubmittedReport.aiAnalysis ? (
                       <AIAnalysisCard analysis={justSubmittedReport.aiAnalysis} />
+                    ) : isAiPending(justSubmittedReport) ? (
+                      // AI 分析中（Cloud Tasks 排隊或者進行中）：結果出咗會自動顯示
+                      <div className="rounded-2xl border border-dashed border-brand-300 bg-brand-50/40 p-5 text-center space-y-1" id="ai-analyzing">
+                        <Loader2 className="w-5 h-5 text-brand-600 animate-spin mx-auto" />
+                        <p className="text-sm font-medium text-stone-700">{t('app.aiAnalyzingTitle')}</p>
+                        <p className="text-xs text-stone-500">{t('app.aiAnalyzingBody')}</p>
+                      </div>
                     ) : (
                       <div className="rounded-2xl border border-dashed border-stone-300 p-5 text-center space-y-1">
                         <p className="text-sm font-medium text-stone-700">{t('app.aiNoResponseTitle')}</p>
@@ -503,7 +566,10 @@ function AppContent() {
 
                     <NGOMatchFeedback
                       report={justSubmittedReport}
-                      matchedNGOs={justSubmittedReport.matchedNGOs || []}
+                      matchedNGOs={submittedMatches.matchedNGOs}
+                      requiredCapabilities={submittedMatches.requiredCapabilities}
+                      loading={submittedMatches.loading}
+                      error={submittedMatches.error}
                       onDispatchToNGO={handleDispatchToNGO}
                     />
                   </div>
@@ -564,6 +630,7 @@ function AppContent() {
                 onUpdateCaseStatus={handleUpdateStatus}
                 onDeleteCase={handleDeleteCase}
                 onUpdateNGOCapacity={handleUpdateNGOCapacity}
+                onUpdateNGOCapabilities={handleUpdateNGOCapabilities}
                 onCreateNGO={handleCreateNGO}
                 onDeleteNGO={handleDeleteNGO}
               />

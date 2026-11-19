@@ -230,7 +230,8 @@ const EditCaseModal: React.FC<Props> = ({ report, onClose, onSaved }) => {
         newPhotoPaths,
         lang: getBrowserLanguage(),
       });
-      onSaved(result.noResponse ? 'editCase.savedNoAi' : 'editCase.saved');
+      // queued = AI 已排隊重新分析（Cloud Tasks），結果之後自動更新
+      onSaved(result.queued ? 'editCase.savedAnalyzing' : result.noResponse ? 'editCase.savedNoAi' : 'editCase.saved');
     } catch (err: any) {
       if (err instanceof PhotoError) {
         setErrorKey(err.key);

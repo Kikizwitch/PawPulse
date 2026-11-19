@@ -29,6 +29,7 @@ import {
 import AddressAutocomplete from './AddressAutocomplete';
 import { isCoverSensitive } from '../utils/sensitivePhotos';
 import { getApiLang, getAppLang } from '../i18n';
+import { NGO_CAPABILITIES, cleanCapabilities, type NgoCapability } from '../config/ngoCapabilities';
 
 interface AdminDashboardProps {
   reports: StrayReport[];
@@ -37,6 +38,8 @@ interface AdminDashboardProps {
   onUpdateCaseStatus: (caseId: string, status: CaseStatus) => void;
   onDeleteCase: (caseId: string) => void;
   onUpdateNGOCapacity: (ngoId: string, capacity: NGOCapacityStatus) => void;
+  /** 更新機構能力（配對用） */
+  onUpdateNGOCapabilities: (ngoId: string, capabilities: NgoCapability[]) => void;
   onCreateNGO: (ngo: NGOOrganization) => Promise<boolean>; // true = 已寫入 Firestore
   onDeleteNGO: (ngoId: string) => void;
 }
@@ -75,6 +78,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onUpdateCaseStatus,
   onDeleteCase,
   onUpdateNGOCapacity,
+  onUpdateNGOCapabilities,
   onCreateNGO,
   onDeleteNGO,
 }) => {
@@ -100,6 +104,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newNGO24h, setNewNGO24h] = useState(true);
   const [newNGOSpecialties, setNewNGOSpecialties] = useState(() => t('adminDashboard.form.defaultSpecialties'));
   const [newNGOAcceptedAnimals, setNewNGOAcceptedAnimals] = useState<AnimalType[]>(['cat', 'dog']);
+  // 能力（配對用）；specialties 仍然係自由文字，只作顯示
+  const [newNGOCapabilities, setNewNGOCapabilities] = useState<NgoCapability[]>([]);
 
   // 登入帳戶（不公開）
   const [newLoginEmails, setNewLoginEmails] = useState<string[]>(['']);
@@ -133,6 +139,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     );
   };
 
+  const toggleNewCapability = (c: NgoCapability) => {
+    setNewNGOCapabilities((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
+  };
+
+  // 機構卡片上直接改能力
+  const toggleNgoCapability = (ngo: NGOOrganization, c: NgoCapability) => {
+    const current = ngo.capabilities ?? [];
+    onUpdateNGOCapabilities(ngo.id, current.includes(c) ? current.filter((x) => x !== c) : [...current, c]);
+  };
+
   const resetNGOForm = () => {
     setNewNGOName('');
     setNewNGOEnglishName('');
@@ -148,6 +164,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setNewNGO24h(true);
     setNewNGOSpecialties(t('adminDashboard.form.defaultSpecialties'));
     setNewNGOAcceptedAnimals(['cat', 'dog']);
+    setNewNGOCapabilities([]);
     setNewLoginEmails(['']);
   };
 
@@ -241,6 +258,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         .split(/[,，、]/)
         .map((s) => s.trim())
         .filter(Boolean),
+      capabilities: cleanCapabilities(newNGOCapabilities),
       operatingHours: newNGOOperatingHours.trim(),
       hasEmergencyRescue: newNGO24h,
       capacityStatus: 'available',
@@ -627,6 +645,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
                     </div>
 
+                    {/* 能力（配對用）：撳一下加／減；未標記嘅機構配對時唔加分亦唔扣分 */}
+                    <div className="pt-2 border-t border-stone-100 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-2xs font-bold text-stone-500">{t('adminDashboard.ngos.capabilitiesLabel')}</span>
+                        {ngo.capabilities === undefined && (
+                          <span className="text-2xs text-amber-700">{t('adminDashboard.ngos.capabilitiesUntagged')}</span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {NGO_CAPABILITIES.map((c) => {
+                          const on = (ngo.capabilities ?? []).includes(c);
+                          return (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => toggleNgoCapability(ngo, c)}
+                              aria-pressed={on}
+                              className={`px-2 py-0.5 rounded-md text-2xs font-semibold border transition-colors cursor-pointer ${
+                                on
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                  : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50'
+                              }`}
+                            >
+                              {on ? '✓ ' : ''}
+                              {t(`capability.${c}`)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     <div className="pt-2 border-t border-stone-100 flex items-center justify-between flex-wrap gap-2">
                       <span className="text-2xs font-bold text-stone-500">{t('adminDashboard.ngos.capacityLabel')}</span>
                       <div className="flex items-center gap-1.5">
@@ -792,6 +841,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className="rounded text-brand-600 focus:ring-brand-500"
                       />
                       {animalName(type)}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block font-bold mb-0.5">{t('adminDashboard.form.capabilities')}</label>
+                <p className="text-2xs text-stone-500 mb-1.5">{t('adminDashboard.form.capabilitiesHint')}</p>
+                <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+                  {NGO_CAPABILITIES.map((c) => (
+                    <label key={c} className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newNGOCapabilities.includes(c)}
+                        onChange={() => toggleNewCapability(c)}
+                        className="rounded text-brand-600 focus:ring-brand-500"
+                      />
+                      {t(`capability.${c}`)}
                     </label>
                   ))}
                 </div>

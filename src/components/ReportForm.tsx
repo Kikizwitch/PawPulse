@@ -7,7 +7,6 @@ import { CatIcon, DogIcon, BirdIcon } from './AnimalIcons';
 import type { ResolvedAddress } from '../services/places';
 import { compressImage, uploadCasePhotos, PhotoError } from '../utils/imageCompressor';
 import { MAX_CASE_PHOTOS } from '../utils/casePhotos';
-import { rankFirestoreNGOs } from '../services/caseService';
 import { animalLabel, CASE_TAGS, tagLabel, applyTagLine, stripTagLine } from '../utils/caseLabels';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -338,7 +337,6 @@ export const ReportForm: React.FC<ReportFormProps> = ({ ngos, onSubmitReport, on
 
       // AI 分析改由 server 喺案件建立後執行（見 App.tsx），前端唔可以自訂緊急度
       const urgency = 'P1' as const;
-      const matchedNGOs = rankFirestoreNGOs(ngos, location.lat, location.lng, animalType, urgency);
 
       const effectiveReporterName = isAnonymous ? '' : reporterName.trim();
       const effectiveReporterPhone = isAnonymous ? '' : phone;
@@ -368,9 +366,8 @@ export const ReportForm: React.FC<ReportFormProps> = ({ ngos, onSubmitReport, on
         createdAt: new Date().toISOString(),
         status: 'pending',
         urgency,
-        geminiResponse: null,
         aiAnalysis: null,
-        matchedNGOs: matchedNGOs.slice(0, 3),
+        // NGO 配對改由 server 做（GET /api/cases/:caseId/matches），成功畫面會攞
       };
 
       // 先確認 Firestore 寫入成功；AI 分析同確認信由 App.tsx 喺成功後先觸發

@@ -11,6 +11,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, Sparkles, X, EyeOff } from 'lu
 import { AnimalIcon, animalIconSvg } from './AnimalIcons';
 import { careIconSvg } from './BrandIcons';
 import { isCoverSensitive } from '../utils/sensitivePhotos';
+import { injurySummary } from '../utils/aiAnalysis';
 
 interface InteractiveMapProps {
   reports: StrayReport[];
@@ -228,10 +229,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ reports, ngos = 
     // t 喺依賴入面：轉語言時重新畫 popup
   }, [reports, ngos, filterAnimal, filterUrgency, filterTags, showNGOs, onSelectReport, t]);
 
-  // aiAnalysis.apparentInjuries 冇被 rules 驗證結構，非陣列直接 [0] 會拖垮地圖
-  const safeActiveInjuries = Array.isArray(activeReport?.aiAnalysis?.apparentInjuries)
-    ? activeReport!.aiAnalysis!.apparentInjuries
-    : [];
+  // 第 3 版用觀察（翻譯）；舊版用 AI 寫嘅文字。injurySummary 會檢查型別，唔會拖垮地圖
+  const safeActiveInjuries = injurySummary(activeReport?.aiAnalysis, t);
 
   // 封面有問題（或者 AI 未檢查）就模糊資料卡縮圖
   const activeCoverSensitive = activeReport ? isCoverSensitive(activeReport) : false;

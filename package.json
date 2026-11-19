@@ -7,18 +7,22 @@
     "dev": "tsx server.ts",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=server-dist/server.cjs",
     "start": "node server-dist/server.cjs",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "eval": "tsx scripts/eval.ts"
   },
   "dependencies": {
     "@google/genai": "^2.25.0",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "firebase-admin": "^14.5.0",
+    "google-auth-library": "^10.9.1",
     "heic2any": "^0.0.4",
     "i18next": "^26.4.2",
     "i18next-browser-languagedetector": "^8.2.1",
     "nodemailer": "^10.1.0",
-    "react-i18next": "^17.0.16"
+    "react-i18next": "^17.0.16",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.14",
@@ -38,6 +42,7 @@
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3"
+    "vite": "^6.2.3",
+    "vitest": "^4.1.12"
   }
 }
