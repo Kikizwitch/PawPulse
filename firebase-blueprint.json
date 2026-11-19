@@ -47,8 +47,98 @@
         "urgency": { "type": "string", "enum": ["P0", "P1", "P2"], "description": "新建必須係 P1；AI 分析後由 server 改" },
         "createdAt": { "type": "timestamp", "description": "必須等於 request.time" },
         "updatedAt": { "type": "timestamp" },
-        "aiAnalysis": { "type": ["object", "null"], "description": "新建必須係 null；由 server 寫入（AIAnalysisResult）" },
-        "geminiResponse": { "type": ["object", "null"], "description": "同 aiAnalysis，新建必須係 null" },
+        "aiAnalysis": {
+          "type": ["object", "null"],
+          "description": "新建必須係 null；由 server 寫入（AIAnalysisResult）。schemaVersion 冇 = 1（舊格式，有 confidenceScore）；2 = 冇 confidenceScore；3 = AI 只做觀察（gate / findings / evidence），緊急程度由 server/ai/triage.ts 規則決定；4 = 建議改用建議庫代碼（advice）同 aiNote；5 = 加 matching。前端全部版本都要識顯示。值嘅清單以 server/ai/findings.ts（Zod）為準",
+          "properties": {
+            "schemaVersion": { "type": "integer", "description": "冇呢個欄位 = 1" },
+            "urgencyLevel": { "type": "string", "enum": ["P0", "P1", "P2"], "description": "第 3 版 = triage 結果（唔係 AI 建議）" },
+            "gate": {
+              "type": "object",
+              "description": "第 3 版",
+              "properties": {
+                "animalVisible": { "type": "boolean" },
+                "imageUsable": { "type": "boolean" },
+                "speciesCategory": { "type": "string", "enum": ["cat", "dog", "bird", "other", "unknown"] }
+              }
+            },
+            "findings": {
+              "type": "object",
+              "description": "第 3 版：AI 觀察，每項都可以係 unknown（woundTypes 係清單）",
+              "properties": {
+                "ageClass": { "type": "string", "enum": ["neonate", "juvenile", "adult", "senior", "unknown"] },
+                "consciousness": { "type": "string", "enum": ["alert", "dull", "unresponsive", "appears_dead", "unknown"] },
+                "mobility": { "type": "string", "enum": ["normal", "limping", "unable_to_stand", "unknown"] },
+                "bleeding": { "type": "string", "enum": ["none", "minor", "heavy", "unknown"] },
+                "breathingDistress": { "type": "string", "enum": ["none", "mild", "severe", "unknown"] },
+                "traumaVehicle": { "type": "string", "enum": ["yes", "no", "unknown"] },
+                "traumaFall": { "type": "string", "enum": ["yes", "no", "unknown"] },
+                "traumaBite": { "type": "string", "enum": ["yes", "no", "unknown"] },
+                "traumaEntrapment": { "type": "string", "enum": ["yes", "no", "unknown"] },
+                "wounds": { "type": "string", "enum": ["none", "present", "unknown"] },
+                "woundTypes": { "type": "array", "items": { "type": "string", "enum": ["open_wound", "fracture_deformity", "burn", "eye_injury", "skin_disease", "maggots", "other"] } },
+                "bodyCondition": { "type": "string", "enum": ["emaciated", "thin", "normal", "overweight", "unknown"] }
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "maxItems": 30,
+              "description": "第 3 版：{ finding: findings 欄位名, photo: 案件 photos[] 位置 }；P0 紅旗一定要有證據",
+              "items": { "type": "object", "properties": { "finding": { "type": "string" }, "photo": { "type": "integer" } } }
+            },
+            "triage": {
+              "type": "object",
+              "description": "第 3 版：server/ai/triage.ts 嘅結果",
+              "properties": {
+                "reasonCodes": { "type": "array", "items": { "type": "string" }, "description": "顯示文字喺 locales triage.reason.*" },
+                "needsHumanReview": { "type": "boolean" },
+                "rulesVersion": { "type": "string", "description": "例如 triage.v1" },
+                "modelSuggestion": { "type": ["string", "null"], "enum": ["P0", "P1", "P2", null], "description": "AI 自己建議嘅等級，只可以提高" }
+              }
+            },
+            "uncertainty": {
+              "type": "object",
+              "description": "第 3 版：取代舊嘅信心分數",
+              "properties": {
+                "unknownFindings": { "type": "integer" },
+                "totalFindings": { "type": "integer" },
+                "animalVisible": { "type": "boolean" },
+                "imageUsable": { "type": "boolean" }
+              }
+            },
+            "advice": {
+              "type": "object",
+              "description": "第 4 版：由 server/ai/advice.ts 按觀察喺建議庫揀嘅代碼；文字喺 locales advice.*，審核狀態喺 src/config/adviceLibrary.ts",
+              "properties": {
+                "firstAid": { "type": "array", "maxItems": 6, "items": { "type": "string" } },
+                "equipment": { "type": "array", "maxItems": 6, "items": { "type": "string" } },
+                "precautions": { "type": "array", "maxItems": 4, "items": { "type": "string" } },
+                "libraryVersion": { "type": "string", "description": "例如 advice.v1" }
+              }
+            },
+            "matching": {
+              "type": "object",
+              "description": "第 5 版：分析嗰陣計嘅配對需要（server/ai/capabilities.ts）。配對 API 每次都會即場重新計，呢度係紀錄",
+              "properties": {
+                "requiredCapabilities": { "type": "array", "items": { "type": "string" } },
+                "speciesMismatch": { "type": "boolean", "description": "AI 物種同報案人揀嘅唔同（AI 答 unknown 或者相片唔可信就唔算）" },
+                "species": { "type": "array", "items": { "type": "string" }, "description": "配對時考慮嘅物種；唔一致就兩個都考慮" },
+                "rulesVersion": { "type": "string", "description": "例如 matching.v1" }
+              }
+            },
+            "aiNote": { "type": "string", "maxLength": 200, "description": "第 4 版：AI 補充嘅一句現場說明（未經審核；有電話、網址、電郵就係空字串）" },
+            "rescueEquipment": { "type": "array", "description": "第 1–3 版先有：AI 寫嘅裝備文字" },
+            "firstAidAdvice": { "type": "array", "description": "第 1–3 版先有：AI 寫嘅急救文字" },
+            "handlingPrecautions": { "type": "array", "description": "第 1–3 版先有：AI 寫嘅注意事項文字" },
+            "identifiedSpecies": { "type": "string", "description": "第 1、2 版先有" },
+            "apparentInjuries": { "type": "array", "description": "第 1、2 版先有" },
+            "urgencyReason": { "type": "string", "description": "第 1、2 版先有" },
+            "confidenceScore": { "type": "number", "description": "舊格式先有：AI 自己作嘅數字，唔可靠，新結果唔再寫" },
+            "sensitivePhotos": { "type": "array", "items": { "type": "integer" }, "description": "敏感相片位置（0 = 封面）；冇呢個欄位 = 未檢查，全部模糊" }
+          }
+        },
+        "aiStatus": { "type": ["string", "null"], "enum": ["queued", "running", "done", "failed", "skipped", null], "description": "AI 分析進度（Phase 4）。新建必須冇或者係 null；只由 server 寫：排隊 queued → 攞鎖 running → done / failed / skipped。前端用 onSnapshot 睇住，顯示「分析中」；queued / running 超過 20 分鐘當冇回應" },
+        "geminiResponse": { "type": ["object", "null"], "description": "舊欄位（以前同 aiAnalysis 一樣），新結果唔再寫；只用嚟補返舊案件嘅 aiAnalysis。新建必須冇或者係 null" },
         "matchedNGOs": { "type": ["array", "null"], "maxItems": 3 },
         "dispatchedToNGO": { "type": ["object", "null"], "description": "新建必須係 null；由 server 寫入（ngoId, ngoName, dispatchedAt, status, simulated）" },
         "acceptedBy": {
@@ -91,7 +181,15 @@
         "website": { "type": "string", "maxLength": 300 },
         "address": { "type": "string", "maxLength": 300 },
         "district": { "type": "string", "maxLength": 100 },
-        "capacityStatus": { "type": "string", "enum": ["available", "busy", "full"] }
+        "capacityStatus": { "type": "string", "enum": ["available", "busy", "full"] },
+        "specialties": { "type": "array", "items": { "type": "string" }, "description": "自由文字專長，只係顯示用，唔影響配對" },
+        "capabilities": {
+          "type": "array",
+          "maxItems": 7,
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["emergency_vet", "surgery", "neonate_care", "trapping", "transport", "skin_parasite", "shelter"] },
+          "description": "結構化能力（Phase 5，配對用；清單見 src/config/ngoCapabilities.ts，rules 會驗證）。冇呢個欄位 = 未標記，配對時唔加分亦唔扣分"
+        }
       },
       "required": ["id", "name", "hotline", "capacityStatus"]
     },
@@ -117,6 +215,72 @@
       },
       "required": ["uid", "email", "ngoId", "createdAt"]
     },
+    "AiRun": {
+      "title": "AI Analysis Run Record (private)",
+      "description": "最近一次 AI 分析嘅技術紀錄（server/ai/runRecord.ts）。只可以由 server 寫；只有 admin 可讀。history 只留最近 10 次摘要，唔留原始回應",
+      "type": "object",
+      "properties": {
+        "trigger": { "type": "string", "enum": ["create", "edit"] },
+        "runNumber": { "type": "integer", "description": "呢種觸發第幾次分析（最多 3）" },
+        "outcome": { "type": "string", "enum": ["done", "failed", "skipped", "superseded"] },
+        "skipReason": { "type": ["string", "null"], "description": "例如 daily_quota" },
+        "model": { "type": "string" },
+        "promptVersion": { "type": "string", "description": "例如 analyze.v1" },
+        "schemaVersion": { "type": "integer" },
+        "startedAt": { "type": "string", "description": "ISO 時間" },
+        "finishedAt": { "type": "timestamp" },
+        "photosSent": { "type": "integer" },
+        "attempts": { "type": "integer", "description": "HTTP 請求次數（包括重試，最多 3）" },
+        "latencyMs": { "type": "integer" },
+        "usage": {
+          "type": ["object", "null"],
+          "properties": {
+            "promptTokens": { "type": ["integer", "null"] },
+            "candidatesTokens": { "type": ["integer", "null"] },
+            "thoughtsTokens": { "type": ["integer", "null"] },
+            "totalTokens": { "type": ["integer", "null"] }
+          }
+        },
+        "finishReason": { "type": ["string", "null"] },
+        "modelVersion": { "type": ["string", "null"] },
+        "urgency": { "type": ["string", "null"], "description": "寫入案件嘅等級；冇寫入係 null" },
+        "triage": { "type": ["object", "null"], "description": "triage 結果（level、reasonCodes、needsHumanReview、rulesVersion、modelSuggestion）；評估用" },
+        "consensus": { "type": ["object", "null"], "description": "AI_OBSERVE_TWICE 先有：runs、succeeded、levels、agreed" },
+        "rawText": { "type": ["string", "null"], "maxLength": 20000, "description": "Gemini 原始回應（最多 20000 字）" },
+        "rawTextTruncated": { "type": "boolean" },
+        "error": {
+          "type": ["object", "null"],
+          "properties": {
+            "kind": { "type": "string", "description": "timeout / rate_limit / server / network / client / blocked / empty / schema / unknown" },
+            "status": { "type": ["integer", "null"] },
+            "message": { "type": "string", "maxLength": 500 }
+          }
+        },
+        "history": { "type": "array", "maxItems": 10, "description": "最近 10 次分析嘅摘要" }
+      }
+    },
+    "AiFeedback": {
+      "title": "NGO feedback on the AI result (private)",
+      "description": "Phase 6：接手咗嘅 NGO（或者 admin）記低實際情況，用嚟評估 AI。只可以經 server（POST /api/cases/:caseId/ai-feedback）寫；admin 同接手咗嘅 NGO 可讀",
+      "type": "object",
+      "properties": {
+        "actualSpecies": { "type": "string", "enum": ["cat", "dog", "bird", "other", "unknown"] },
+        "actualUrgency": { "type": "string", "enum": ["P0", "P1", "P2"] },
+        "adviceUseful": { "type": "string", "enum": ["yes", "partly", "no", "not_applicable"] },
+        "note": { "type": "string", "maxLength": 500 },
+        "submittedByUid": { "type": "string" },
+        "role": { "type": "string", "enum": ["ngo", "admin"] },
+        "ngoId": { "type": ["string", "null"] },
+        "prediction": {
+          "type": "object",
+          "description": "第一次提交嗰陣 AI 嘅預測快照（之後唔會改）：urgency、species、needsHumanReview、schemaVersion、rulesVersion、promptVersion、model、analyzedAt"
+        },
+        "revisions": { "type": "integer", "description": "提交咗幾多次" },
+        "createdAt": { "type": "timestamp" },
+        "updatedAt": { "type": "timestamp" }
+      },
+      "required": ["actualSpecies", "actualUrgency", "adviceUseful", "submittedByUid", "prediction"]
+    },
     "UserCases": {
       "title": "Reporter's Case List",
       "description": "文件 ID = 報案人 UID。由 server 寄確認信時寫入，只有本人可讀",
@@ -131,10 +295,13 @@
   "firestore": {
     "/case/{caseId}": { "schema": "Case", "description": "讀：公開。新建：任何人（嚴格驗證）。更新／刪除：admin（NGO 經 server API）" },
     "/case/{caseId}/private/contact": { "schema": "CaseContact", "description": "讀：admin 同接手咗嘅 NGO。只可以同案件同一個 batch 新建" },
-    "/ngodatail/{ngoId}": { "schema": "NGODatail", "description": "讀：公開。寫：admin" },
+    "/case/{caseId}/private/aiFeedback": { "schema": "AiFeedback", "description": "讀：admin 同接手咗嘅 NGO。寫：只限 server（前端連 admin 都唔可以直接建立、修改或者刪除）" },
+    "/case/{caseId}/private/aiRun": { "schema": "AiRun", "description": "讀：只限 admin。寫：只限 server（前端連 admin 都唔可以建立、修改或者刪除）" },
+    "/ngodatail/{ngoId}": { "schema": "NGODatail", "description": "讀：公開。寫：admin（capabilities 要係認得嘅值）" },
     "/adminuser/{uid}": { "schema": "AdminUser", "description": "讀：本人。寫：禁止（Console 手動）" },
     "/ngouser/{uid}": { "schema": "NgoUser", "description": "讀：本人同 admin。寫：只限 server" },
     "/usercases/{uid}": { "schema": "UserCases", "description": "讀：本人。寫：只限 server" },
-    "/serverLocks/{kind}_{caseId}": { "description": "claimOnce 用，確保每宗案件每種動作只做一次。前端完全唔可以讀寫" }
+    "/aiQuota/{YYYY-MM-DD}": { "description": "AI 每日額度計數（UTC 日期，所有 instance 共用，用 transaction 加一）：{ count, limit, updatedAt }。前端完全唔可以讀寫" },
+    "/serverLocks/{kind}_{caseId}": { "description": "前端完全唔可以讀寫。email / dispatch：claimOnce，每宗案件只做一次。analyze / analyzeEdit：AI 分析鎖（state = running / released / done、runs、leaseUntil），暫時性失敗可以再試，最多 3 次" }
   }
 }

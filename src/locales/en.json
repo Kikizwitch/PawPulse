@@ -98,7 +98,10 @@
       "commentForbidden": "You cannot delete this comment",
       "commentDeleteFailed": "Failed to delete comment",
       "restoreAdminOnly": "Only administrators can restore cases",
-      "deleteFailed": "Failed to delete"
+      "deleteFailed": "Failed to delete",
+      "matchesFailed": "Could not match rescue organisations right now. Please try again later.",
+      "badFeedback": "Invalid feedback",
+      "feedbackFailed": "Could not save the feedback. Please try again later."
     },
     "labels": {
       "deleteReason": {
@@ -365,6 +368,9 @@
     "reportAnother": "Report another case",
     "aiNoResponseTitle": "No response from Gemini",
     "aiNoResponseBody": "AI injury analysis is unavailable. Your case has been saved and matched with nearby rescue teams.",
+    "successAnalyzing": "Photo saved and nearby NGOs matched. AI is analysing the injuries.",
+    "aiAnalyzingTitle": "AI is analysing the photos…",
+    "aiAnalyzingBody": "This usually takes under a minute. The result will appear here automatically; you can also leave this page and check it later in My cases.",
     "caseNotFound": "Case #{{id}} was not found. It may have been deleted or the link is incorrect.",
     "statusUpdateFailed": "Status update failed (permission or network issue). Changes have been reverted.",
     "deleteFailed": "Delete failed, possibly due to insufficient permissions. The case has been restored.",
@@ -423,6 +429,7 @@
     "details": "Details"
   },
   "aiCard": {
+    "speciesMismatch": "The AI thinks the animal is a {{ai}}, but the report says {{reported}}. Matching considers both; rescuers should confirm on site.",
     "urgency": {
       "P0": { "label": "P0 - Critical", "sub": "Life-threatening / suspected road accident / shock / needs emergency care now" },
       "P1": { "label": "P1 - Needs medical care", "sub": "Fracture / open wound / kitten or puppy / severe infection or weakness" },
@@ -447,7 +454,226 @@
     "firstAid": "On-site guidance for the reporter (while waiting for rescue)",
     "noFirstAid": "No specific guidance. Please follow general animal first-aid practice.",
     "precautions": "Safety precautions: ",
-    "listSeparator": "; "
+    "listSeparator": "; ",
+    "aiAdviceNote": "The advice below is written by AI and has not been reviewed by a vet. Use it for reference only."
+  },
+  "aiFindings": {
+    "species": {
+      "cat": "Cat",
+      "dog": "Dog",
+      "bird": "Bird",
+      "other": "Other animal",
+      "unknown": "Can't tell"
+    },
+    "field": {
+      "ageClass": "Age",
+      "consciousness": "Consciousness",
+      "mobility": "Mobility",
+      "bleeding": "Bleeding",
+      "breathingDistress": "Breathing difficulty",
+      "traumaVehicle": "Suspected vehicle collision",
+      "traumaFall": "Suspected fall",
+      "traumaBite": "Suspected bite",
+      "traumaEntrapment": "Trapped or entangled",
+      "wounds": "Wounds",
+      "woundTypes": "Injury types",
+      "bodyCondition": "Body condition"
+    },
+    "value": {
+      "ageClass": {
+        "neonate": "Newborn",
+        "juvenile": "Young",
+        "adult": "Adult",
+        "senior": "Senior",
+        "unknown": "Can't tell"
+      },
+      "consciousness": {
+        "alert": "Alert",
+        "dull": "Dull or drowsy",
+        "unresponsive": "Unresponsive",
+        "appears_dead": "May be dead",
+        "unknown": "Can't tell"
+      },
+      "mobility": {
+        "normal": "Normal",
+        "limping": "Limping",
+        "unable_to_stand": "Unable to stand",
+        "unknown": "Can't tell"
+      },
+      "bleeding": {
+        "none": "None",
+        "minor": "Minor",
+        "heavy": "Heavy",
+        "unknown": "Can't tell"
+      },
+      "breathingDistress": {
+        "none": "None",
+        "mild": "Mild",
+        "severe": "Severe",
+        "unknown": "Can't tell"
+      },
+      "trauma": {
+        "yes": "Signs present",
+        "no": "No signs",
+        "unknown": "Can't tell"
+      },
+      "wounds": {
+        "none": "None",
+        "present": "Present",
+        "unknown": "Can't tell"
+      },
+      "woundTypes": {
+        "open_wound": "Open wound",
+        "fracture_deformity": "Possible fracture or deformity",
+        "burn": "Burn",
+        "eye_injury": "Eye injury",
+        "skin_disease": "Skin disease",
+        "maggots": "Maggots",
+        "other": "Other injury"
+      },
+      "bodyCondition": {
+        "emaciated": "Emaciated",
+        "thin": "Thin",
+        "normal": "Normal",
+        "overweight": "Overweight",
+        "unknown": "Can't tell"
+      }
+    },
+    "pair": "{{field}}: {{value}}"
+  },
+  "triage": {
+    "reasonsTitle": "Why this urgency level (decided by PawPulse rules)",
+    "findingsTitle": "What the AI observed ({{n}})",
+    "noNotable": "No abnormal signs were observed.",
+    "unknownList": "Could not tell from the photos: {{list}}",
+    "uncertainty": "{{unknown}} of {{total}} observations could not be determined from the photos",
+    "allDetermined": "Every observation could be determined from the photos",
+    "needsReview": "Needs human review: the AI result is uncertain or the photos are not enough. Rescuers should assess the animal in person.",
+    "rulesVersion": "Rules {{version}}",
+    "modelSuggestion": "AI's own suggestion: {{level}} (for reference only; it never lowers the level)",
+    "reason": {
+      "unresponsive": "The animal is unresponsive",
+      "heavy_bleeding": "Heavy bleeding",
+      "severe_breathing_distress": "Severe breathing difficulty",
+      "vehicle_trauma": "Suspected vehicle collision",
+      "unable_to_stand": "Unable to stand",
+      "dull_consciousness": "Dull or drowsy",
+      "possibly_deceased": "The animal may be dead; a person needs to confirm",
+      "minor_bleeding": "Minor bleeding",
+      "mild_breathing_distress": "Mild breathing difficulty",
+      "limping": "Limping",
+      "fall_trauma": "Suspected fall",
+      "bite_wound": "Suspected bite wound",
+      "entrapment": "Trapped or entangled",
+      "visible_wound": "Visible wound",
+      "open_wound": "Open wound",
+      "fracture_deformity": "Possible fracture or deformity",
+      "burn": "Burn",
+      "eye_injury": "Eye injury",
+      "skin_disease": "Skin disease",
+      "maggots": "Maggots present",
+      "other_injury": "Other injury",
+      "emaciated": "Emaciated",
+      "neonate": "Newborn animal",
+      "consciousness_unknown": "Consciousness could not be determined from the photos",
+      "bleeding_unknown": "Bleeding could not be determined from the photos",
+      "breathingDistress_unknown": "Breathing could not be determined from the photos",
+      "mobility_unknown": "Mobility could not be determined from the photos",
+      "reporter_tag_injured": "The reporter marked the animal as injured",
+      "reporter_tag_trapped": "The reporter marked the animal as trapped",
+      "reporter_tag_juvenile": "The reporter marked the animal as young",
+      "no_animal_visible": "No animal is visible in the photos",
+      "image_unusable": "The photos are too unclear to assess",
+      "red_flag_unconfirmed": "The AI reported a critical sign that could not be confirmed in the photos",
+      "model_raised": "The AI suggested a higher urgency",
+      "model_p0_unconfirmed": "The AI suggested P0, but no critical sign was seen in the photos",
+      "runs_disagree": "Two AI analyses disagreed",
+      "no_urgent_findings": "No signs needing urgent care were seen in the photos"
+    }
+  },
+  "aiFeedback": {
+    "open": "Give feedback on the AI result",
+    "title": "Was the AI result accurate?",
+    "hint": "Answer based on what you found on site. Feedback is only used to evaluate and improve the AI; it doesn't change the case's urgency.",
+    "close": "Close",
+    "loading": "Loading…",
+    "species": "Actual species",
+    "speciesUnknown": "Not sure",
+    "urgency": "Actual urgency",
+    "aiSaid": "AI said: {{value}}",
+    "noAi": "No AI result",
+    "advice": "Was the advice helpful?",
+    "adviceOption": {
+      "yes": "Helpful",
+      "partly": "Partly helpful",
+      "no": "Not helpful",
+      "not_applicable": "Not applicable"
+    },
+    "note": "Notes (optional)",
+    "notePlaceholder": "For example: the AI missed a broken hind leg",
+    "submit": "Submit feedback",
+    "update": "Update feedback",
+    "saved": "Saved",
+    "saveFailed": "Could not save the feedback. Please try again later."
+  },
+  "capability": {
+    "emergency_vet": "Emergency vet care",
+    "surgery": "Surgery",
+    "neonate_care": "Newborn care",
+    "trapping": "Trapping and rescue from entrapment",
+    "transport": "Pick-up and transport",
+    "skin_parasite": "Skin and parasite care",
+    "shelter": "Long-term shelter"
+  },
+  "advice": {
+    "pendingReview": "Pending vet review",
+    "pendingReviewHint": "These suggestions were drafted by the PawPulse team and have not yet been reviewed by a vet. Use them for reference only.",
+    "aiNoteTitle": "AI note",
+    "aiNoteHint": "Written automatically by AI; not checked by a person or a vet.",
+    "firstAid": {
+      "keep_distance": "Keep a safe distance and watch the animal. Injured or frightened animals may bite or scratch.",
+      "urgent_contact_vet": "This looks serious. If rescuers can't arrive soon, phone a nearby vet clinic to ask whether they can take the animal.",
+      "add_clearer_photo": "The photos don't clearly show the animal's condition. If it is safe, edit the report and add a clearer photo.",
+      "avoid_moving_spine": "Possible impact or fall: don't move the animal unless it is in immediate danger. If you must, slide a flat board or towel under it and keep its head and back in a straight line.",
+      "gentle_pressure_bleeding": "If the animal is calm and you can approach safely, press a clean cloth gently on the bleeding area. If blood soaks through, don't remove it; add another layer.",
+      "keep_airway_clear": "The animal is struggling to breathe: keep the area ventilated, don't cover its head and don't press on its chest.",
+      "do_not_shake_check_breathing": "The animal isn't responding: don't shake it. Watch whether its chest is moving and tell the rescuers.",
+      "possibly_deceased_no_bare_hands": "The animal may have died. Don't touch it with bare hands, and keep the location details so rescuers can confirm.",
+      "do_not_pull_free": "The animal is trapped or tangled: don't pull it free. Wait for rescuers with the right tools.",
+      "do_not_splint": "Don't try to straighten or splint a limb that may be broken.",
+      "no_home_remedies": "Don't put creams, alcohol or home remedies on wounds.",
+      "do_not_touch_eye": "Don't touch or rinse an injured eye.",
+      "do_not_remove_maggots": "Don't try to remove maggots yourself. Tell the rescuers; a vet needs to treat it.",
+      "neonate_watch_for_mother": "Very young animals are not always abandoned; the mother may be nearby. Unless they are in danger, watch from a distance for a while first.",
+      "neonate_keep_warm_no_milk": "Newborn animals can't keep themselves warm. If they must be moved, keep them warm with a towel, but don't give them cow's milk.",
+      "keep_warm": "Shelter the animal from rain, sun or wind, for example with a box or towel, but keep it ventilated and don't cover its head.",
+      "bird_dark_box": "Birds: if it must be contained, put it in a box with air holes in a dark, quiet place, and don't give it water.",
+      "do_not_chase": "Don't chase or corner the animal; it may panic, run off or get hurt again.",
+      "no_food_water_medicine": "Unless a vet or rescuer tells you to, don't give food, water or any human medicine.",
+      "keep_quiet": "Keep the area quiet and keep crowds and other pets away.",
+      "stay_and_observe": "If it is safe, stay nearby until rescuers arrive and note any changes in the animal's condition."
+    },
+    "equipment": {
+      "gloves": "Thick protective gloves",
+      "towel_blanket": "Towels or blankets",
+      "carrier": "Pet carrier or crate",
+      "slip_lead": "Slip lead",
+      "ventilated_box": "Ventilated box",
+      "stretcher_board": "Stretcher or flat board",
+      "first_aid_kit": "First-aid supplies (gauze, bandages)",
+      "cutting_tools": "Cutting tools to free a trapped animal",
+      "heat_source": "Heat source (heat pad or hot water bottle)"
+    },
+    "precautions": {
+      "bite_scratch_risk": "Injured or frightened animals may bite or scratch, even if they are usually friendly.",
+      "traffic_safety": "Near a road: make sure you are safe first and watch for traffic.",
+      "support_spine": "When lifting, support the head, back and pelvis, and avoid twisting the body.",
+      "protect_injured_limb": "When moving the animal, avoid bumping the injured limb.",
+      "avoid_skin_contact": "Some skin conditions and parasites can spread to people or pets; avoid direct skin contact.",
+      "deceased_handling": "Wear gloves when handling a dead animal, and clean your hands and tools afterwards.",
+      "bird_minimal_handling": "Birds stress easily; handle them as little as possible.",
+      "wash_hands": "Wash your hands thoroughly after any contact."
+    }
   },
   "caseModal": {
     "caseBadge": "{{level}} case",
@@ -477,6 +703,8 @@
     "tabNgos": "Matched NGOs & feedback ({{n}})",
     "aiNoResponseTitle": "No response from Gemini",
     "aiNoResponseBody": "AI injury analysis is unavailable. Please act according to the situation on site.",
+    "aiAnalyzingTitle": "AI is analysing the photos…",
+    "aiAnalyzingBody": "The result will appear here automatically. Until then, please act according to the situation on site.",
     "navigate": "Open Google Maps directions",
     "closeView": "Close",
     "gallery": {
@@ -489,6 +717,11 @@
     }
   },
   "ngoMatch": {
+    "requiredTitle": "This case may need:",
+    "loading": "Matching nearby rescue organisations…",
+    "unavailable": "Matching is unavailable right now. Please call an emergency hotline directly.",
+    "capabilityMissing": "This organisation hasn't listed this capability",
+    "capabilityMissingChip": "Not listed: {{name}}",
     "headerTitle": "Nearby NGOs matched automatically ({{n}} recommended)",
     "headerSub": "Matched by species ({{animal}}), urgency ({{urgency}}) and distance",
     "liveDistance": "Live distance",
@@ -662,6 +895,8 @@
     },
     "listSeparator": ", ",
     "ngos": {
+      "capabilitiesLabel": "Capabilities (for matching)",
+      "capabilitiesUntagged": "Not tagged yet: no effect on matching",
       "title": "Partner NGO directory (Firestore)",
       "subtitle": "Organisation details are public; login accounts are visible to admins only",
       "add": "Add NGO",
@@ -709,6 +944,8 @@
       "empty": "No log entries"
     },
     "form": {
+      "capabilities": "Capabilities (used for automatic matching)",
+      "capabilitiesHint": "Different from specialties: specialties are display text only; capabilities affect case matching.",
       "title": "Add partner NGO",
       "sectionBasic": "Basic information",
       "name": "Organisation name (Chinese) *",
@@ -842,6 +1079,7 @@
     "saving": "Saving — AI re-analysis takes about 10 seconds…",
     "saved": "Changes saved and re-analysed by AI.",
     "savedNoAi": "Changes saved, but AI couldn't re-analyse right now. Urgency is set to P1 for now.",
+    "savedAnalyzing": "Changes saved. AI is re-analysing; urgency is set to P1 until the result appears.",
     "cancel": "Cancel",
     "save": "Save changes",
     "states": {

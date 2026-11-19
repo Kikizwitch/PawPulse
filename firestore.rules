@@ -104,7 +104,7 @@ service cloud.firestore {
                                  'description', 'status', 'urgency', 'createdAt', 'storagePath', 'photos'])
         && data.keys().hasOnly(['id', 'title', 'animalType', 'customAnimalName', 'tags', 'photoUrl',
                                 'storagePath', 'photos', 'location', 'description', 'createdAt', 'updatedAt',
-                                'status', 'urgency', 'geminiResponse', 'aiAnalysis',
+                                'status', 'urgency', 'geminiResponse', 'aiAnalysis', 'aiStatus',
                                 'matchedNGOs', 'dispatchedToNGO'])
         && caseId.matches('^[A-Za-z0-9_-]{1,64}$')
         && data.id == caseId
@@ -124,6 +124,8 @@ service cloud.firestore {
         && (!('updatedAt' in data) || data.updatedAt == request.time)
         && (!('aiAnalysis' in data) || data.aiAnalysis == null)
         && (!('geminiResponse' in data) || data.geminiResponse == null)
+        // AI 分析進度只可以由 server 寫（queued / running / done / failed / skipped）
+        && (!('aiStatus' in data) || data.aiStatus == null)
         && (!('matchedNGOs' in data) || data.matchedNGOs == null
             || (data.matchedNGOs is list && data.matchedNGOs.size() <= 3))
         && (!('dispatchedToNGO' in data) || data.dispatchedToNGO == null);
@@ -156,14 +158,16 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
 
       match /private/{docId} {
-        // admin，或者接手咗呢宗案件嘅機構
-        allow read: if isAdmin() || (docId == 'contact' && isAcceptingNgo(caseId));
+        // admin，或者接手咗呢宗案件嘅機構（機構只可以讀 contact 同自己嘅 AI 回饋 aiFeedback）
+        // aiRun（AI 原始回應同技術紀錄）只有 admin 讀到
+        allow read: if isAdmin() || ((docId == 'contact' || docId == 'aiFeedback') && isAcceptingNgo(caseId));
         // 只可以喺「案件同一個 batch 新建」時寫入，唔可以幫舊案件補寫假資料
         allow create: if docId == 'contact'
           && !exists(/databases/$(database)/documents/case/$(caseId))
           && existsAfter(/databases/$(database)/documents/case/$(caseId))
           && isValidContact(request.resource.data);
-        allow update, delete: if isAdmin();
+        // aiRun、aiFeedback 只可以由 server（Admin SDK）寫，admin 喺前端都唔可以改或者刪
+        allow update, delete: if isAdmin() && !(docId in ['aiRun', 'aiFeedback']);
       }
 
       // 5D 留言：睇到案件就睇到留言（待刪除案件只限 admin / NGO）；只可以經 server 寫
@@ -175,9 +179,19 @@ service cloud.firestore {
       }
     }
 
+    // NGO 能力：清單同 src/config/ngoCapabilities.ts 一樣，改一邊要改埋另一邊
+    function isValidCapabilities(data) {
+      return !('capabilities' in data)
+        || (data.capabilities is list
+            && data.capabilities.size() <= 7
+            && data.capabilities.hasOnly(['emergency_vet', 'surgery', 'neonate_care', 'trapping',
+                                          'transport', 'skin_parasite', 'shelter']));
+    }
+
     match /ngodatail/{ngoId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update: if isAdmin() && isValidCapabilities(request.resource.data);
+      allow delete: if isAdmin();
     }
 
     // 其他（包括 serverLocks）一律拒絕；server 用 Admin SDK 唔受 rules 限制

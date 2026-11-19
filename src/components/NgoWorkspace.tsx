@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { statusLabel, animalLabel } from '../utils/caseLabels';
 import { getApiLang } from '../i18n';
 import { isCoverSensitive } from '../utils/sensitivePhotos';
+import { AiFeedbackForm } from './AiFeedbackForm';
 
 type WorkTab = 'open' | 'mine' | 'others';
 
@@ -195,6 +196,9 @@ export const NgoWorkspace: React.FC<NgoWorkspaceProps> = ({
                     ))}
                   </div>
                 )}
+
+                {/* 接手咗嘅案件：回饋 AI 結果（評估用） */}
+                {tab === 'mine' && <AiFeedbackForm report={r} />}
 
                 {tab === 'others' && r.acceptedBy && (
                   <p className="text-2xs text-stone-500">{t('ngoWorkspace.acceptedBy', { name: r.acceptedBy.ngoName })}</p>

@@ -1,0 +1,28 @@
+// 測試用嘅 AI 原始輸出（analyze.v3）：一隻跛腳、有輕微出血嘅貓
+export const VALID_RAW = {
+  animalVisible: true,
+  imageUsable: true,
+  speciesCategory: 'cat',
+  ageClass: 'adult',
+  consciousness: 'alert',
+  mobility: 'limping',
+  bleeding: 'minor',
+  breathingDistress: 'none',
+  traumaVehicle: 'unknown',
+  traumaFall: 'no',
+  traumaBite: 'no',
+  traumaEntrapment: 'no',
+  wounds: 'present',
+  woundTypes: ['open_wound'],
+  bodyCondition: 'thin',
+  evidence: [
+    { finding: 'mobility', photo: 1 },
+    { finding: 'bleeding', photo: 2 },
+  ],
+  estimatedBreed: 'Tabby',
+  appearanceDescription: 'Adult cat on pavement',
+  suggestedUrgencyReason: 'Visible wound',
+  suggestedUrgency: 'P1',
+  situationNote: 'The cat is under a parked car.',
+  sensitivePhotoNumbers: [2],
+};

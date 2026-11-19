@@ -21,3 +21,5 @@ firebase-blueprint.json
 *firebase-adminsdk*.json
 service-account*.json
 serviceAccount*.json
+eval-data
+scripts

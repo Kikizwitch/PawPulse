@@ -11,3 +11,6 @@ coverage/
 *.local
 .vite/
 server-dist/
+
+# AI 評估資料集（動物相片同報告）唔可以入 git
+eval-data/

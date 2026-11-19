@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NGOOrganization, StrayReport } from '../types';
+import type { NgoCapability } from '../config/ngoCapabilities';
 import { getGoogleMapsDirectionsUrl } from '../utils/location';
 import { animalLabel } from '../utils/caseLabels';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,7 +9,13 @@ import { Phone, MessageCircle, Navigation, Send, CheckCircle2, ShieldAlert, Cloc
 
 interface NGOMatchFeedbackProps {
   report: StrayReport;
+  /** server 排好名嘅機構（useCaseMatches） */
   matchedNGOs: NGOOrganization[];
+  /** 案件可能需要嘅能力（由 AI 觀察推算） */
+  requiredCapabilities?: NgoCapability[];
+  loading?: boolean;
+  /** 攞唔到配對：顯示「暫時未能配對」，唔好當冇機構 */
+  error?: boolean;
   onDispatchToNGO?: (ngoId: string, ngoName: string) => Promise<void>;
 }
 
@@ -18,7 +25,14 @@ const NGO_MESSAGE_LANG = 'zh';
 // 訊息係純文字（WhatsApp），唔需要 HTML escape，否則地址入面嘅 "&"、"/" 會變亂碼
 const NO_ESCAPE = { interpolation: { escapeValue: false } } as const;
 
-export const NGOMatchFeedback: React.FC<NGOMatchFeedbackProps> = ({ report, matchedNGOs, onDispatchToNGO }) => {
+export const NGOMatchFeedback: React.FC<NGOMatchFeedbackProps> = ({
+  report,
+  matchedNGOs,
+  requiredCapabilities = [],
+  loading = false,
+  error = false,
+  onDispatchToNGO,
+}) => {
   const { t, i18n } = useTranslation();
   const { isAdmin } = useAuth();
   const [dispatchingId, setDispatchingId] = useState<string | null>(null);
@@ -80,10 +94,25 @@ export const NGOMatchFeedback: React.FC<NGOMatchFeedbackProps> = ({ report, matc
             {t('ngoMatch.liveDistance')}
           </span>
         </div>
+        {/* 案件可能需要嘅能力（由 AI 觀察推算），用嚟配對 */}
+        {requiredCapabilities.length > 0 && (
+          <div className="mt-2.5 flex items-center gap-1.5 flex-wrap text-xs">
+            <span className="text-stone-500 font-medium">{t('ngoMatch.requiredTitle')}</span>
+            {requiredCapabilities.map((c) => (
+              <span key={c} className="px-2 py-0.5 rounded-md bg-white border border-stone-300 text-stone-700 font-medium">
+                {t(`capability.${c}`)}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="p-5 space-y-4">
-        {matchedNGOs.length === 0 && <div className="p-6 text-center text-stone-400 text-xs">{t('ngoMatch.empty')}</div>}
+        {matchedNGOs.length === 0 && (
+          <div className="p-6 text-center text-stone-400 text-xs">
+            {loading ? t('ngoMatch.loading') : error ? t('ngoMatch.unavailable') : t('ngoMatch.empty')}
+          </div>
+        )}
 
         {matchedNGOs.map((ngo, index) => {
           const isTopMatch = index === 0;
@@ -140,6 +169,26 @@ export const NGOMatchFeedback: React.FC<NGOMatchFeedbackProps> = ({ report, matc
                 <span className="font-medium text-stone-700">{t('ngoMatch.baseAddress')}</span>
                 {ngo.address}
               </p>
+
+              {/* 案件需要嘅能力：有嘅打剔，冇嘅灰色（機構未標記能力就唔顯示） */}
+              {((ngo.matchedCapabilities?.length ?? 0) > 0 || (ngo.missingCapabilities?.length ?? 0) > 0) && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {(ngo.matchedCapabilities ?? []).map((c) => (
+                    <span key={c} className="text-[11px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+                      ✓ {t(`capability.${c}`)}
+                    </span>
+                  ))}
+                  {(ngo.missingCapabilities ?? []).map((c) => (
+                    <span
+                      key={c}
+                      className="text-[11px] px-2 py-0.5 rounded-md bg-stone-50 text-stone-400 border border-stone-200"
+                      title={t('ngoMatch.capabilityMissing')}
+                    >
+                      {t('ngoMatch.capabilityMissingChip', { name: t(`capability.${c}`) })}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {(ngo.specialties || []).map((spec, sIdx) => (

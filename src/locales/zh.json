@@ -98,7 +98,10 @@
         "commentForbidden": "無權刪除此留言",
         "commentDeleteFailed": "刪除留言失敗",
         "restoreAdminOnly": "只有管理員可以還原案件",
-        "deleteFailed": "刪除失敗"
+        "deleteFailed": "刪除失敗",
+        "matchesFailed": "暫時未能配對救援機構，請稍後再試。",
+        "badFeedback": "回饋資料不正確",
+        "feedbackFailed": "未能儲存回饋，請稍後再試。"
         },
         "labels": {
         "deleteReason": {
@@ -390,6 +393,9 @@
         "reportAnother": "通報新個案",
         "aiNoResponseTitle": "Gemini 沒有回應",
         "aiNoResponseBody": "未能取得 AI 傷勢分析，個案已儲存，並已直接配對附近救援隊。",
+        "successAnalyzing": "相片已儲存，並已配對附近合適的 NGO。AI 正在分析傷勢。",
+        "aiAnalyzingTitle": "AI 正在分析相片…",
+        "aiAnalyzingBody": "通常需時不足一分鐘。結果出來後會自動顯示；你亦可以離開此頁，稍後在「我的案件」查看。",
         "caseNotFound": "找不到案件 #{{id}}，可能已被刪除或連結有誤。",
         "statusUpdateFailed": "狀態更新失敗，可能因為權限不足或網絡問題，畫面已還原。",
         "deleteFailed": "刪除失敗，可能因為權限不足，個案已還原。",
@@ -424,6 +430,7 @@
         "details": "詳情"
     },
     "aiCard": {
+        "speciesMismatch": "AI 判斷相中動物是「{{ai}}」，與通報選擇的「{{reported}}」不同。配對救援機構時兩者都會考慮，請救援人員到場確認。",
         "urgency": {
             "P0": { "label": "P0 - 極度危急", "sub": "生命危險／疑似嚴重車禍／休克／需立即急診救助" },
             "P1": { "label": "P1 - 需醫療關注", "sub": "骨折／開放外傷／幼貓幼犬／嚴重感染虛弱" },
@@ -448,7 +455,226 @@
         "firstAid": "通報市民現場應急守則（等待救援期間）",
         "noFirstAid": "暫無現場應急建議，請依一般動物救助常識處理。",
         "precautions": "安全禁忌與防護提示：",
-        "listSeparator": "；"
+        "listSeparator": "；",
+        "aiAdviceNote": "以下建議由 AI 生成，尚未經獸醫審核，只供參考。"
+    },
+    "aiFindings": {
+        "species": {
+            "cat": "貓",
+            "dog": "狗",
+            "bird": "雀鳥",
+            "other": "其他動物",
+            "unknown": "未能辨識"
+        },
+        "field": {
+            "ageClass": "年齡",
+            "consciousness": "意識",
+            "mobility": "活動能力",
+            "bleeding": "出血",
+            "breathingDistress": "呼吸困難",
+            "traumaVehicle": "疑似遭車輛撞擊",
+            "traumaFall": "疑似高處墮下",
+            "traumaBite": "疑似咬傷",
+            "traumaEntrapment": "被困或纏繞",
+            "wounds": "傷口",
+            "woundTypes": "傷勢類型",
+            "bodyCondition": "體態"
+        },
+        "value": {
+            "ageClass": {
+                "neonate": "初生（未斷奶）",
+                "juvenile": "幼年",
+                "adult": "成年",
+                "senior": "老年",
+                "unknown": "無法判斷"
+            },
+            "consciousness": {
+                "alert": "清醒",
+                "dull": "反應遲鈍",
+                "unresponsive": "無反應",
+                "appears_dead": "疑似已死亡",
+                "unknown": "無法判斷"
+            },
+            "mobility": {
+                "normal": "正常",
+                "limping": "跛行",
+                "unable_to_stand": "無法站立",
+                "unknown": "無法判斷"
+            },
+            "bleeding": {
+                "none": "沒有",
+                "minor": "輕微",
+                "heavy": "嚴重",
+                "unknown": "無法判斷"
+            },
+            "breathingDistress": {
+                "none": "沒有",
+                "mild": "輕微",
+                "severe": "嚴重",
+                "unknown": "無法判斷"
+            },
+            "trauma": {
+                "yes": "有跡象",
+                "no": "沒有跡象",
+                "unknown": "無法判斷"
+            },
+            "wounds": {
+                "none": "沒有",
+                "present": "有",
+                "unknown": "無法判斷"
+            },
+            "woundTypes": {
+                "open_wound": "開放性傷口",
+                "fracture_deformity": "疑似骨折或肢體變形",
+                "burn": "燒傷",
+                "eye_injury": "眼部受傷",
+                "skin_disease": "皮膚病",
+                "maggots": "傷口有蛆",
+                "other": "其他傷勢"
+            },
+            "bodyCondition": {
+                "emaciated": "極度消瘦",
+                "thin": "偏瘦",
+                "normal": "正常",
+                "overweight": "過重",
+                "unknown": "無法判斷"
+            }
+        },
+        "pair": "{{field}}：{{value}}"
+    },
+    "triage": {
+        "reasonsTitle": "緊急度評定原因（由 PawPulse 規則判定）",
+        "findingsTitle": "AI 觀察到的情況 ({{n}})",
+        "noNotable": "未觀察到異常情況。",
+        "unknownList": "相片中無法判斷：{{list}}",
+        "uncertainty": "{{unknown}} / {{total}} 項觀察無法從相片判斷",
+        "allDetermined": "所有觀察項目均可從相片判斷",
+        "needsReview": "需要人手覆核：AI 結果不確定或相片不足，請救援人員親身評估。",
+        "rulesVersion": "規則版本 {{version}}",
+        "modelSuggestion": "AI 自行建議：{{level}}（只供參考，不會降低緊急度）",
+        "reason": {
+            "unresponsive": "動物無反應",
+            "heavy_bleeding": "嚴重出血",
+            "severe_breathing_distress": "嚴重呼吸困難",
+            "vehicle_trauma": "疑似遭車輛撞擊",
+            "unable_to_stand": "無法站立",
+            "dull_consciousness": "反應遲鈍",
+            "possibly_deceased": "動物可能已經死亡，需要人手確認",
+            "minor_bleeding": "輕微出血",
+            "mild_breathing_distress": "輕微呼吸困難",
+            "limping": "跛行",
+            "fall_trauma": "疑似高處墮下",
+            "bite_wound": "疑似咬傷",
+            "entrapment": "被困或纏繞",
+            "visible_wound": "可見傷口",
+            "open_wound": "開放性傷口",
+            "fracture_deformity": "疑似骨折或肢體變形",
+            "burn": "燒傷",
+            "eye_injury": "眼部受傷",
+            "skin_disease": "皮膚病",
+            "maggots": "傷口有蛆",
+            "other_injury": "其他傷勢",
+            "emaciated": "極度消瘦",
+            "neonate": "初生動物（未斷奶）",
+            "consciousness_unknown": "無法從相片判斷意識狀態",
+            "bleeding_unknown": "無法從相片判斷是否出血",
+            "breathingDistress_unknown": "無法從相片判斷呼吸狀況",
+            "mobility_unknown": "無法從相片判斷活動能力",
+            "reporter_tag_injured": "通報人標示為「受傷」",
+            "reporter_tag_trapped": "通報人標示為「被困」",
+            "reporter_tag_juvenile": "通報人標示為「幼年」",
+            "no_animal_visible": "相片中未見動物",
+            "image_unusable": "相片不清晰，無法評估",
+            "red_flag_unconfirmed": "AI 報告了危急情況，但未能在相片中確認",
+            "model_raised": "AI 建議提高緊急度",
+            "model_p0_unconfirmed": "AI 建議列為極度危急，但相片中未見危急跡象",
+            "runs_disagree": "兩次 AI 分析結果不一致",
+            "no_urgent_findings": "相片中未見需要緊急處理的情況"
+        }
+    },
+    "aiFeedback": {
+        "open": "回饋 AI 判斷",
+        "title": "AI 判斷準確嗎？",
+        "hint": "請按現場實際情況填寫。回饋只用於評估和改善 AI，不會改變案件的緊急度。",
+        "close": "收起",
+        "loading": "正在讀取…",
+        "species": "實際物種",
+        "speciesUnknown": "無法確定",
+        "urgency": "實際緊急程度",
+        "aiSaid": "AI 判斷：{{value}}",
+        "noAi": "沒有 AI 結果",
+        "advice": "建議有沒有幫助？",
+        "adviceOption": {
+            "yes": "有幫助",
+            "partly": "部分有幫助",
+            "no": "沒有幫助",
+            "not_applicable": "不適用"
+        },
+        "note": "備註（選填）",
+        "notePlaceholder": "例如：AI 看不到後腿骨折",
+        "submit": "提交回饋",
+        "update": "更新回饋",
+        "saved": "已儲存",
+        "saveFailed": "未能儲存回饋，請稍後再試。"
+    },
+    "capability": {
+        "emergency_vet": "緊急獸醫治療",
+        "surgery": "手術",
+        "neonate_care": "初生動物照顧",
+        "trapping": "誘捕及解困",
+        "transport": "到場接送",
+        "skin_parasite": "皮膚病及寄生蟲處理",
+        "shelter": "長期收容"
+    },
+    "advice": {
+        "pendingReview": "待獸醫審核",
+        "pendingReviewHint": "以下建議由 PawPulse 團隊擬定，尚未經獸醫審核，只供參考。",
+        "aiNoteTitle": "AI 補充說明",
+        "aiNoteHint": "由 AI 自動生成，未經人手或獸醫核實。",
+        "firstAid": {
+            "keep_distance": "請與動物保持安全距離並留意牠的情況；受傷或受驚的動物可能會咬人或抓人。",
+            "urgent_contact_vet": "情況看來危急。如救援人員未能盡快到場，可先致電附近的獸醫診所，查詢能否接收。",
+            "add_clearer_photo": "相片未能清楚顯示動物情況。如安全可行，請修改通報並補上較清晰的相片。",
+            "avoid_moving_spine": "疑似撞擊或墮下：除非動物身處即時危險，否則請不要移動牠。如必須移動，請用平板或毛巾承托，盡量保持頭部和背部成一直線。",
+            "gentle_pressure_bleeding": "如動物安靜而你能安全接近，可用乾淨的布輕輕按住出血位置；布被血滲透時不要拿走，再加一層即可。",
+            "keep_airway_clear": "動物呼吸有困難：請保持周圍通風，不要蓋住牠的頭部，也不要按壓胸口。",
+            "do_not_shake_check_breathing": "動物沒有反應：請不要搖動牠。留意胸口有沒有起伏，並告訴救援人員。",
+            "possibly_deceased_no_bare_hands": "動物可能已經死亡。請不要徒手觸碰，並保留位置資料讓救援人員確認。",
+            "do_not_pull_free": "動物被困或被纏住：請不要強行把牠拉出來，等待帶備合適工具的救援人員。",
+            "do_not_splint": "請不要嘗試拉直或固定疑似骨折的肢體。",
+            "no_home_remedies": "請不要在傷口塗抹藥膏、酒精或其他家居療法。",
+            "do_not_touch_eye": "請不要觸碰或沖洗受傷的眼睛。",
+            "do_not_remove_maggots": "請不要自行清除蛆蟲；請告訴救援人員，需要由獸醫處理。",
+            "neonate_watch_for_mother": "初生動物不一定被遺棄，母親可能就在附近。除非牠們身處危險，請先在遠處觀察一段時間。",
+            "neonate_keep_warm_no_milk": "初生動物無法自行保暖。如必須移動，請用毛巾保暖，但不要餵牛奶。",
+            "keep_warm": "請為動物遮擋雨水、陽光或寒風，例如用紙箱或毛巾，但要保持通風，不要蓋住頭部。",
+            "bird_dark_box": "雀鳥：如必須收容，請放在有透氣孔的紙箱內，置於陰暗安靜的地方，不要餵水。",
+            "do_not_chase": "請不要追趕或圍堵動物，以免牠驚慌逃走或再次受傷。",
+            "no_food_water_medicine": "除非獸醫或救援人員指示，請不要餵食、餵水或給予人用藥物。",
+            "keep_quiet": "請保持周圍安靜，並讓人群和其他寵物遠離。",
+            "stay_and_observe": "如情況安全，請在附近留守觀察直至救援人員到場，並記下動物情況的變化。"
+        },
+        "equipment": {
+            "gloves": "厚身保護手套",
+            "towel_blanket": "毛巾或毯子",
+            "carrier": "寵物籠或運輸箱",
+            "slip_lead": "牽引繩（P 繩）",
+            "ventilated_box": "有透氣孔的紙箱",
+            "stretcher_board": "擔架或平板",
+            "first_aid_kit": "急救用品（紗布、繃帶）",
+            "cutting_tools": "剪鉗等解困工具",
+            "heat_source": "保暖用品（暖包、熱水袋）"
+        },
+        "precautions": {
+            "bite_scratch_risk": "受傷或受驚的動物即使平日溫馴，也可能咬人或抓人。",
+            "traffic_safety": "現場靠近道路：請先確保自身安全，留意來往車輛。",
+            "support_spine": "搬動時要承托頭部、背部和盆骨，避免扭動身體。",
+            "protect_injured_limb": "搬動時避免碰撞受傷的肢體。",
+            "avoid_skin_contact": "部分皮膚病和寄生蟲可傳染給人或寵物，請避免皮膚直接接觸。",
+            "deceased_handling": "處理動物屍體時請戴手套，事後清潔雙手和用具。",
+            "bird_minimal_handling": "雀鳥容易受驚，請盡量減少接觸。",
+            "wash_hands": "接觸動物後請徹底洗手。"
+        }
     },
     "caseModal": {
         "caseBadge": "{{level}} 案件",
@@ -478,6 +704,8 @@
         "tabNgos": "媒合 NGO 與通報回饋 ({{n}})",
         "aiNoResponseTitle": "Gemini 沒有回應",
         "aiNoResponseBody": "未能取得 AI 傷勢分析報告，請依照現場實際狀況進行救助。",
+        "aiAnalyzingTitle": "AI 正在分析相片…",
+        "aiAnalyzingBody": "結果出來後會自動顯示。在此之前，請依照現場實際狀況進行救助。",
         "navigate": "開啟 Google Maps 現場導航",
         "closeView": "關閉檢視",
         "gallery": {
@@ -490,6 +718,11 @@
         }
     },
     "ngoMatch": {
+        "requiredTitle": "此個案可能需要：",
+        "loading": "正在配對附近救援機構…",
+        "unavailable": "暫時未能配對救援機構，請直接致電緊急熱線。",
+        "capabilityMissing": "此機構未有標示這項能力",
+        "capabilityMissingChip": "未標示：{{name}}",
         "headerTitle": "自動媒合鄰近 NGO 機構（{{n}} 間推薦）",
         "headerSub": "依據動物物種（{{animal}}）、緊急等級（{{urgency}}）及距離智慧配對",
         "liveDistance": "即時算距",
@@ -663,6 +896,8 @@
         },
         "listSeparator": "、",
         "ngos": {
+            "capabilitiesLabel": "能力（配對用）",
+            "capabilitiesUntagged": "未標示：配對時不加分亦不扣分",
             "title": "Firestore 合作 NGO 救助機構名冊",
             "subtitle": "機構資料公開顯示；登入帳戶只有管理員可見",
             "add": "新增 NGO 機構",
@@ -710,6 +945,8 @@
             "empty": "暫無日誌記錄"
         },
         "form": {
+            "capabilities": "能力（用於自動配對）",
+            "capabilitiesHint": "與上面的「專長」不同：專長只作顯示，能力會影響個案配對。",
             "title": "新增合作 NGO 機構",
             "sectionBasic": "基本資料",
             "name": "機構中文全名 *",
@@ -841,6 +1078,7 @@
         "saving": "正在儲存，AI 重新分析約需 10 秒…",
         "saved": "已儲存修改，AI 已重新分析。",
         "savedNoAi": "已儲存修改，但 AI 暫時未能重新分析，緊急度暫定為 P1。",
+        "savedAnalyzing": "已儲存修改。AI 正在重新分析，緊急度暫定為 P1，結果出來後會自動更新。",
         "cancel": "取消",
         "save": "儲存修改",
         "states": {

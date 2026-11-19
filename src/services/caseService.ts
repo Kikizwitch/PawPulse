@@ -4,11 +4,11 @@ import {
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType, auth  } from '../firebase';
 import { 
-  StrayReport, CaseStatus, NGOOrganization, AnimalType, UrgencyLevel, 
+  StrayReport, CaseStatus, NGOOrganization, AnimalType, UrgencyLevel, AI_STATUSES,
   NgoAccount, CaseAcceptance, LocationCoords, DeleteReason, 
-  ContactCategory, CaseComment, CommentRole 
+  ContactCategory, CaseComment, CommentRole, AiFeedback 
 } from '../types';
-import { calculateDistanceKm } from '../utils/location';
+import { cleanCapabilities, type NgoCapability } from '../config/ngoCapabilities';
 import { monitoring } from '../utils/monitoring';
 import { isCaseTag } from '../utils/caseLabels';
 import { apiFetch } from './api';
@@ -36,6 +36,7 @@ export function docToReport(id: string, data: DocumentData): StrayReport | null 
   const loc = data.location;
   if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') return null;
 
+  // 新結果只寫 aiAnalysis；舊案件可能只有 geminiResponse（以前兩個欄位一模一樣），所以仲要讀
   const ai = data.aiAnalysis || data.geminiResponse || null;
   return {
     id,
@@ -71,8 +72,9 @@ export function docToReport(id: string, data: DocumentData): StrayReport | null 
       : data.createdAt || new Date().toISOString(),
     status: data.status || 'pending',
     urgency: data.urgency || 'P1',
-    geminiResponse: ai,
     aiAnalysis: ai,
+    // 唔認得嘅值當冇（rules 唔驗證 server 寫嘅值）
+    aiStatus: AI_STATUSES.includes(data.aiStatus) ? data.aiStatus : null,
     dispatchedToNGO: data.dispatchedToNGO || undefined,
     acceptedBy:
       data.acceptedBy && typeof data.acceptedBy.ngoId === 'string'
@@ -116,6 +118,20 @@ export function subscribeToCases(
 }
 
 /**
+ * 即時睇住一宗案件（報案成功畫面用嚟等 AI 結果）；冇權限或者唔存在就回傳 null
+ */
+export function subscribeToCase(caseId: string, onUpdate: (report: StrayReport | null) => void): () => void {
+  return onSnapshot(
+    doc(db, CASE_COLLECTION, caseId),
+    (snap) => onUpdate(snap.exists() ? docToReport(snap.id, snap.data()) : null),
+    (error) => {
+      monitoring.captureError(error, { context: 'subscribeToCase', caseId });
+      onUpdate(null);
+    }
+  );
+}
+
+/**
  * 用 batch 一齊寫：
  *   1. /case/{caseId}                 -> 公開欄位
  *   2. /case/{caseId}/private/contact -> 報案人聯絡資料
@@ -144,7 +160,8 @@ export async function createCaseInFirestore(report: StrayReport): Promise<void> 
       updatedAt: serverTimestamp(),
       status: 'pending',
       urgency: 'P1', // 真正緊急度由 server AI 分析後寫入
-      geminiResponse: null,
+      // 唔再寫 geminiResponse（舊欄位）；rules 容許冇呢個欄位
+      // aiStatus 都唔寫：由 server 排隊時設定
       aiAnalysis: null,
       dispatchedToNGO: report.dispatchedToNGO || null,
     };
@@ -226,7 +243,9 @@ export function subscribeToNGOs(
     (snapshot) => {
       const list: NGOOrganization[] = [];
       snapshot.forEach((snap) => {
-        list.push({ id: snap.id, ...(snap.data() as any) });
+        const d = snap.data() as any;
+        // 能力：只保留認得嘅值；冇呢個欄位 = 未標記（保持 undefined）
+        list.push({ id: snap.id, ...d, capabilities: Array.isArray(d.capabilities) ? cleanCapabilities(d.capabilities) : undefined });
       });
       onUpdate(list);
     },
@@ -246,6 +265,8 @@ export async function createNGOInFirestore(ngo: NGOOrganization): Promise<void> 
     delete payload.distanceKm;
     delete payload.driveTimeMins;
     delete payload.matchScore;
+    delete payload.matchedCapabilities;
+    delete payload.missingCapabilities;
     for (const key of Object.keys(payload)) {
       if (payload[key] === undefined) delete payload[key];
     }
@@ -398,14 +419,15 @@ export interface CaseEditPayload {
 export async function editCase(
   caseId: string,
   payload: CaseEditPayload
-): Promise<{ urgency: string; noResponse: boolean }> {
+): Promise<{ urgency: string; noResponse: boolean; queued: boolean }> {
   const res = await apiFetch(`/api/cases/${encodeURIComponent(caseId)}/edit`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
   const data = await res.json().catch(() => null);
   if (!res.ok) throw new Error(data?.code || `HTTP ${res.status}`);
-  return { urgency: data?.urgency ?? 'P1', noResponse: !!data?.noResponse };
+  // queued = AI 分析已排隊（結果之後經 Firestore 更新）
+  return { urgency: data?.urgency ?? 'P1', noResponse: !!data?.noResponse, queued: data?.queued === true };
 }
 
 // 報案人申請刪除；失敗時 Error.message = server 回傳嘅 code
@@ -532,38 +554,110 @@ export async function deleteComment(caseId: string, commentId: string): Promise<
 }
 
 
-export function rankFirestoreNGOs(
-  ngos: NGOOrganization[],
-  caseLat: number,
-  caseLng: number,
-  animalType: AnimalType,
-  urgency: UrgencyLevel
-): NGOOrganization[] {
-  if (!ngos || ngos.length === 0) return [];
-  const scored = ngos.map((ngo) => {
-    const distKm = calculateDistanceKm(caseLat, caseLng, ngo.lat, ngo.lng);
-    const driveTimeMins = Math.max(5, Math.round(distKm * 2.5));
-    let score = 100;
-    score -= distKm * 3.5;
-    if (ngo.acceptedAnimals && ngo.acceptedAnimals.includes(animalType)) {
-      score += 25;
-    } else {
-      score -= 40;
-    }
-    if (urgency === 'P0') {
-      if (ngo.hasEmergencyRescue) score += 35;
-      else score -= 25;
-    }
-    if (ngo.capacityStatus === 'busy') score -= 15;
-    if (ngo.capacityStatus === 'full') score -= 50;
+// ---------- NGO 對 AI 結果嘅回饋（Phase 6）----------
+
+const FEEDBACK_SPECIES = ['cat', 'dog', 'bird', 'other', 'unknown'];
+const FEEDBACK_ADVICE = ['yes', 'partly', 'no', 'not_applicable'];
+
+/** 讀之前提交過嘅回饋（admin 同接手咗嘅 NGO 先讀到）；冇或者讀唔到就回傳 null */
+export async function fetchAiFeedback(caseId: string): Promise<AiFeedback | null> {
+  try {
+    const snap = await getDoc(doc(db, CASE_COLLECTION, caseId, PRIVATE_SUBCOLLECTION, 'aiFeedback'));
+    const d = snap.exists() ? snap.data() : null;
+    if (!d) return null;
     return {
-      ...ngo,
-      distanceKm: distKm,
-      driveTimeMins,
-      matchScore: Math.max(10, Math.min(99, Math.round(score))),
+      actualSpecies: FEEDBACK_SPECIES.includes(d.actualSpecies) ? d.actualSpecies : 'unknown',
+      actualUrgency: ['P0', 'P1', 'P2'].includes(d.actualUrgency) ? d.actualUrgency : 'P1',
+      adviceUseful: FEEDBACK_ADVICE.includes(d.adviceUseful) ? d.adviceUseful : 'not_applicable',
+      note: typeof d.note === 'string' ? d.note : '',
     };
+  } catch (err) {
+    console.warn(`fetchAiFeedback: 無法讀取案件 #${caseId} 嘅回饋`, err);
+    return null;
+  }
+}
+
+/** 提交（或者修改）回饋；失敗會 throw ApiError */
+export async function submitAiFeedback(caseId: string, feedback: AiFeedback): Promise<void> {
+  const res = await apiFetch(`/api/cases/${encodeURIComponent(caseId)}/ai-feedback`, {
+    method: 'POST',
+    body: JSON.stringify(feedback),
   });
-  return scored.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new ApiError(data?.error || `HTTP ${res.status}`, res.status);
+  }
+  monitoring.log('info', 'firestore', `AI feedback saved for case #${caseId}`);
+}
+
+// ---------- NGO 配對（Phase 5：排名喺 server 做）----------
+
+/** server 回傳嘅一間機構配對結果（唔包機構資料，前端用自己嘅 NGO 清單合併） */
+export interface CaseMatch {
+  ngoId: string;
+  matchScore: number;
+  distanceKm: number;
+  driveTimeMins: number;
+  matchedCapabilities: NgoCapability[];
+  missingCapabilities: NgoCapability[];
+}
+
+export interface CaseMatchesResult {
+  matches: CaseMatch[];
+  requiredCapabilities: NgoCapability[];
+  speciesMismatch: boolean;
+}
+
+/** 攞案件嘅 NGO 配對；失敗會 throw */
+export async function fetchCaseMatches(caseId: string, limitN = 3): Promise<CaseMatchesResult> {
+  const res = await apiFetch(`/api/cases/${encodeURIComponent(caseId)}/matches?limit=${limitN}`);
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data || !Array.isArray(data.matches)) throw new ApiError(data?.error || `HTTP ${res.status}`, res.status);
+  // server 回應都檢查型別，避免壞資料令畫面 crash
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+  return {
+    matches: data.matches
+      .filter((m: any) => m && typeof m.ngoId === 'string')
+      .map((m: any) => ({
+        ngoId: m.ngoId,
+        matchScore: num(m.matchScore),
+        distanceKm: num(m.distanceKm),
+        driveTimeMins: num(m.driveTimeMins),
+        matchedCapabilities: cleanCapabilities(m.matchedCapabilities),
+        missingCapabilities: cleanCapabilities(m.missingCapabilities),
+      })),
+    requiredCapabilities: cleanCapabilities(data.requiredCapabilities),
+    speciesMismatch: data.speciesMismatch === true,
+  };
+}
+
+/** 將配對結果同 NGO 清單合併（清單入面搵唔到嘅機構略過，例如啱啱刪除） */
+export function mergeMatches(ngos: NGOOrganization[], matches: CaseMatch[]): NGOOrganization[] {
+  const byId = new Map(ngos.map((n) => [n.id, n]));
+  return matches.flatMap((m) => {
+    const ngo = byId.get(m.ngoId);
+    return ngo
+      ? [{
+          ...ngo,
+          matchScore: m.matchScore,
+          distanceKm: m.distanceKm,
+          driveTimeMins: m.driveTimeMins,
+          matchedCapabilities: m.matchedCapabilities,
+          missingCapabilities: m.missingCapabilities,
+        }]
+      : [];
+  });
+}
+
+/** admin 更新機構能力（rules 會驗證清單） */
+export async function updateNGOCapabilities(ngoId: string, capabilities: NgoCapability[]): Promise<void> {
+  try {
+    await updateDoc(doc(db, NGO_COLLECTION, ngoId), { capabilities: cleanCapabilities(capabilities), updatedAt: serverTimestamp() });
+    monitoring.log('info', 'firestore', `Updated NGO ${ngoId} capabilities`);
+  } catch (err) {
+    monitoring.captureError(err, { ngoId, context: 'updateNGOCapabilities' });
+    handleFirestoreError(err, OperationType.UPDATE, `${NGO_COLLECTION}/${ngoId}`);
+  }
 }
 
 export type CaseUnread = { count: number; lastBy?: string; preview?: string };

@@ -8,6 +8,7 @@ import {
 import { getApiLang } from '../i18n';
 import { Search, Sparkles, MapPin, Clock, ShieldAlert, ChevronRight, EyeOff } from 'lucide-react';
 import { isCoverSensitive } from '../utils/sensitivePhotos';
+import { injurySummary, speciesLabel } from '../utils/aiAnalysis';
 import { AnimalIcon } from './AnimalIcons';
 
 interface CaseFeedProps {
@@ -61,7 +62,9 @@ export const CaseFeed: React.FC<CaseFeedProps> = ({ reports, onSelectReport, onN
       const matchAddr = report.location.address.toLowerCase().includes(q);
       const matchDesc = report.description.toLowerCase().includes(q);
       const matchBreed = report.aiAnalysis?.estimatedBreed?.toLowerCase().includes(q);
-      if (!matchTitle && !matchAddr && !matchDesc && !matchBreed) return false;
+      // 傷勢：第 3 版用目前語言嘅觀察文字，舊版用 AI 寫嘅文字
+      const matchInjury = injurySummary(report.aiAnalysis, t).some((s) => s.toLowerCase().includes(q));
+      if (!matchTitle && !matchAddr && !matchDesc && !matchBreed && !matchInjury) return false;
     }
     return true;
   });
@@ -181,10 +184,8 @@ export const CaseFeed: React.FC<CaseFeedProps> = ({ reports, onSelectReport, onN
           {filteredReports.map((report) => {
             const isP0 = report.urgency === 'P0';
             const badgeClass = STATUS_BADGE_CLASS[report.status] ?? STATUS_BADGE_CLASS.pending;
-            // firestore.rules 冇驗證 aiAnalysis 內部結構，非陣列直接 .join() 會拖垮成個列表
-            const safeInjuries = Array.isArray(report.aiAnalysis?.apparentInjuries)
-              ? report.aiAnalysis!.apparentInjuries
-              : [];
+            // 第 3 版用觀察（翻譯）；舊版用 AI 寫嘅文字。injurySummary 會檢查型別，唔會拖垮成個列表
+            const safeInjuries = injurySummary(report.aiAnalysis, t);
             const topNgo = report.matchedNGOs?.[0];
             const blurCover = isCoverSensitive(report);
 
@@ -251,7 +252,12 @@ export const CaseFeed: React.FC<CaseFeedProps> = ({ reports, onSelectReport, onN
                         <div className="flex items-center gap-1 font-bold text-stone-800 mb-1">
                           <Sparkles className="w-3 h-3 text-brand-600" />
                           <span>
-                            {t('caseFeed.aiBreed', { breed: report.aiAnalysis.estimatedBreed || t('caseFeed.unknown') })}
+                            {t('caseFeed.aiBreed', {
+                              breed:
+                                report.aiAnalysis.estimatedBreed ||
+                                speciesLabel(report.aiAnalysis, t) ||
+                                t('caseFeed.unknown'),
+                            })}
                           </span>
                         </div>
                         {safeInjuries.length > 0 && (
